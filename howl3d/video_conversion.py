@@ -1,4 +1,4 @@
 class VideoConversion:
-    def __init__(self, config, video_src):
+    def __init__(self, config, video_path):
         self.config = config
-        self.video_src = video_src
+        self.video_path = video_path
