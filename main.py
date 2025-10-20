@@ -1,9 +1,11 @@
 # Howl3D: Free & Open-Source 3D SBS Conversion
 __version__ = "0.0.1"
 
+from concurrent.futures import ThreadPoolExecutor
+
 import torch
 import yaml
-from concurrent.futures import ThreadPoolExecutor
+
 from howl3d.video_conversion import VideoConversion
 
 # Global variables
