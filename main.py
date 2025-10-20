@@ -9,10 +9,10 @@ import yaml
 from howl3d.video_conversion import VideoConversion
 
 # Global variables
-device = torch.device('cuda') # Set Torch device to be used for any applicable operations going forward
+device = torch.device("cuda") # Set Torch device to be used for any applicable operations going forward
 thread_pool = ThreadPoolExecutor(max_workers=8) # Construct pool for potential multithreaded processes
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Load config from disk
     with open("./config.yml") as config_file:
         config = yaml.safe_load(config_file)
