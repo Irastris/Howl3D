@@ -14,5 +14,9 @@ if __name__ == '__main__':
 
     print("Hello, world!")
     
+    # Initialize the video converter
     video_path = sys.argv[1] # TODO: Implement a proper argsparse. Assuming this is video file in the same directory as the script during early development.
     video_conversion = VideoConversion(config, video_path)
+
+    # Process the video
+    video_conversion.process_video()
