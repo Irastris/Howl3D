@@ -13,8 +13,8 @@ if __name__ == '__main__':
     # Create global config to passing data down with
     config = {}
     # Add variables into the config
-    config["DEVICE"] = device
-    config["THREAD_POOL"] = thread_pool
+    config["device"] = device
+    config["thread_pool"] = thread_pool
 
     print("Hello, world!")
     

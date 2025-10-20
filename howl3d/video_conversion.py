@@ -39,3 +39,4 @@ class VideoConversion:
 
     def process_video(self):
         self.video_info = get_video_info(self.video_path)
+        self.config['video_info'] = self.video_info  # Propogate this to the global config in case I need it later
