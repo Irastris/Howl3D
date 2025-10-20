@@ -13,3 +13,6 @@ if __name__ == '__main__':
     config["THREAD_POOL"] = thread_pool
 
     print("Hello, world!")
+    
+    video_path = sys.argv[1] # TODO: Implement a proper argsparse. Assuming this is video file in the same directory as the script during early development.
+    video_conversion = VideoConversion(config, video_path)
