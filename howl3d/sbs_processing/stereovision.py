@@ -25,6 +25,7 @@ class StereoVisionProcessor:
             "-y",  # Overwrite output file
             "-r", str(self.config["video_info"]["framerate"]),
             "-i", str(self.config["sbs_output_path"] / "sbs_%06d.png"),
+            "-vf", "scale=-1:1080",
             "-c:v", "libx264",
             "-crf", "18",
             "-pix_fmt", "yuv420p",
@@ -42,7 +43,55 @@ class StereoVisionProcessor:
         if process.returncode != 0:
             raise RuntimeError(f"ffmpeg encoding failed: {process.stderr}")
 
-    def process_frame(self, frame_idx):
+    @staticmethod
+    def pad_frame(image):
+        height, width, channels = image.shape
+
+        # Each eye occupies half the width
+        eye_width = width // 2
+        eye_height = height
+
+        # Calculate the aspect ratio of each eye
+        current_aspect = eye_width / eye_height
+        target_aspect = 16 / 9
+
+        # Skip padding if the image is already 16:9
+        if abs(current_aspect - target_aspect) < 0.001:
+            return image
+
+        if current_aspect < target_aspect:
+            target_eye_width = int(eye_height * target_aspect)
+            total_padding = target_eye_width - eye_width
+
+            # Pad each eye separately
+            left_pad = total_padding // 2
+            right_pad = total_padding - left_pad
+
+            # Create padded image
+            new_width = width + 2 * total_padding
+            padded = np.zeros((height, new_width, channels), dtype=image.dtype)
+
+            # Copy eyes with padding
+            padded[:, left_pad:left_pad + eye_width, :] = image[:, :eye_width, :]
+            right_eye_start = target_eye_width + left_pad
+            padded[:, right_eye_start:right_eye_start + eye_width, :] = image[:, eye_width:, :]
+        else:
+            target_eye_height = int(eye_width / target_aspect)
+            total_padding = target_eye_height - eye_height
+
+            # Pad each eye separately
+            top_pad = total_padding // 2
+            bottom_pad = total_padding - top_pad
+
+            # Create padded image
+            new_height = height + total_padding
+            padded = np.zeros((new_height, width, channels), dtype=image.dtype)
+
+            # Copy eyes with vertical padding
+            padded[top_pad:top_pad + height, :, :] = image
+
+        return padded
+
     def should_compute_sbs(self):
         if not self.config["sbs_output_path"].exists(): return True
         existing_frames = len(list(self.config["sbs_output_path"].glob("sbs_*.png")))
@@ -85,6 +134,9 @@ class StereoVisionProcessor:
         for shift in range(11):
             shifted_coords = np.clip(new_x_coords + shift, 0, width - 1)
             sbs_image[y_coords[valid_mask], shifted_coords[valid_mask]] = image_array[y_coords[valid_mask], x_coords[valid_mask]]
+
+        # Pad each eye to a 16:9 aspect ratio if necessary
+        sbs_image = self.pad_frame(sbs_image)
 
         # Save the side-by-side frame
         sbs_frame_path = self.config["sbs_output_path"] / f"sbs_{frame_idx:06d}.png"
