@@ -17,7 +17,7 @@ vda_model_configs = {
 class VideoDepthAnythingProcessor:
     def __init__(self, config):
         self.config = config
-        self.config["depth_output_path"] = Path(self.config["working_dir"]) / self.config["vda_depth_dir"]
+        self.config["depths_output_path"] = Path(self.config["working_dir"]) / self.config["vda_depth_dir"]
         self.config["depth_stats"] = {"min": float("inf"), "max": float("-inf")}
 
     def encode_video(self, output_path):
@@ -52,7 +52,7 @@ class VideoDepthAnythingProcessor:
         d_max = self.config["depth_stats"]["max"]
 
         for i in range(self.config["video_info"]["frames"]):
-            depth = np.load(str(self.config["depth_output_path"] / f"depth_{i:06d}.npy"))
+            depth = np.load(str(self.config["depths_output_path"] / f"depth_{i:06d}.npy"))
             depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
             process.stdin.write(depth_norm.tobytes())
 
@@ -87,7 +87,7 @@ class VideoDepthAnythingProcessor:
         # Save depth maps to disk
         for i, depth_map in enumerate(depths):
             frame_idx = start_idx + i
-            depth_path = self.config["depth_output_path"] / f"depth_{frame_idx:06d}.npy"
+            depth_path = self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"
             np.save(str(depth_path), depth_map)
 
         # Cleanup memory
@@ -104,7 +104,7 @@ class VideoDepthAnythingProcessor:
         video_depth_anything = video_depth_anything.to("cuda").eval()
 
         # Ensure depth output directory exists, cleaning up existing contents if they exist
-        ensure_directory(self.config["depth_output_path"], True)
+        ensure_directory(self.config["depths_output_path"], True)
 
         # Compute depth in batches
         print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
