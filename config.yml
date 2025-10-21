@@ -13,7 +13,7 @@ sv_depth_scale: 200 # Intensity of the depth effect. The original ComfyUI node d
 working_dir: "working"
 frames_dir: "frames"
 vda_depth_dir: "depths_vda"
-sv_sbs_dir: "sbs_sv"
+sv_sbs_dir: "frames_sbs_sv"
 
 # Video Depth Anything settings
 vda_model: "vitb" # Which model to use in ["vits", "vitb", "vitl"]
