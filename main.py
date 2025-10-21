@@ -19,11 +19,9 @@ if __name__ == "__main__":
 
     # Initialize the video converter
     video_path = "example.mp4" # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
-    video_conversion = VideoConversion(config, video_path)
-
-    # Process the video
     print(f"Processing {video_path}")
-    video_conversion.process_video()
+    video_conversion = VideoConversion(config, video_path)
+    video_conversion.process()
 
     # Cleanup working directory if enabled
     if config["cleanup"]: cleanup_directory(config["working_path"])
