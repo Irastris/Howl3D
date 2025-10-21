@@ -112,11 +112,6 @@ class VideoDepthAnythingProcessor:
             end_idx = min(start_idx + self.config["vda_batch_size"], self.config["video_info"]["frames"])
             self.process_frame_batch(start_idx, end_idx, video_depth_anything)
 
-        # Create final video from saved depth frames
-        output_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
-        print(f"Encoding depth video to {output_video}")
-        self.encode_video(output_video)
-
         # Cleanup model from GPU
         del video_depth_anything
         torch.cuda.empty_cache()

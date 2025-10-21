@@ -79,3 +79,8 @@ class VideoConversion:
         print("Running depth processor")
         depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process_video()
+
+        # Encode depth video
+        # output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
+        # print(f"Encoding depth video to {output_depth_video}")
+        # depth_processor.encode_video(output_depth_video)
