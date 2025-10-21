@@ -22,6 +22,7 @@ if __name__ == "__main__":
     video_conversion = VideoConversion(config, video_path)
 
     # Process the video
+    print(f"Processing {video_path}")
     video_conversion.process_video()
 
     # Cleanup working directory if enabled

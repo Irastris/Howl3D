@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import cv2
+from tqdm import tqdm
 
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.utils.directories import ensure_directory
@@ -44,15 +45,10 @@ class VideoConversion:
 
     def export_frames(self):
         capture = cv2.VideoCapture(str(self.config["video_path"]))
-
-        frame_count = 0
-        while (frame_count + 1) <= self.config["video_info"]["frames"]:
-            ret, frame = capture.read()
-            if not ret: break
-            frame_filename = self.config["frames_output_path"] / f"frame_{frame_count:06d}.png"
+        for i in tqdm(range(self.config["video_info"]["frames"])):
+            _, frame = capture.read()
+            frame_filename = self.config["frames_output_path"] / f"frame_{i:06d}.png"
             cv2.imwrite(str(frame_filename), frame)
-            frame_count += 1
-
         capture.release()
 
     def process_video(self):
