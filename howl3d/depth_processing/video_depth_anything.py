@@ -104,8 +104,8 @@ class VideoDepthAnythingProcessor:
 
         # Save depth stats to disk for reruns
         depth_stats = {
-            "depth_min": self.config["depth_stats"]["min"],
-            "depth_max": self.config["depth_stats"]["max"]
+            "depth_min": float(self.config["depth_stats"]["min"]),
+            "depth_max": float(self.config["depth_stats"]["max"])
         }
         depths_yaml_path = Path(self.config["working_dir"]) / f"{self.config['vda_depth_dir']}.yaml"
         with open(depths_yaml_path, "w") as depth_yaml:
