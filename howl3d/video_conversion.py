@@ -44,6 +44,11 @@ class VideoConversion:
 
         return video_info
 
+    def should_export_frames(self):
+        if not self.config["frames_output_path"].exists(): return True
+        existing_frames = len(list(self.config["frames_output_path"].glob("frame_*.png")))
+        return True if existing_frames != self.config["video_info"]["frames"] else False
+
     def export_frames(self):
         capture = cv2.VideoCapture(str(self.config["video_path"]))
         for i in tqdm(range(self.config["video_info"]["frames"])):
@@ -52,29 +57,34 @@ class VideoConversion:
             cv2.imwrite(str(frame_filename), frame)
         capture.release()
 
-    def process_video(self):
-        # Ensure frame output directory exists, cleaning up existing contents if they exist
-        ensure_directory(self.config["frames_output_path"], True)
+    def process(self):
+        # Check if frames are already exported
+        if self.should_export_frames():
+            # Ensure frame output directory exists, cleaning up existing contents if they exist
+            ensure_directory(self.config["frames_output_path"], True)
 
-        # Export frames
-        frames = self.config["video_info"]["frames"]
-        print(f"Exporting {frames} frames from video")
-        self.export_frames()
+            # Export frames
+            frames = self.config["video_info"]["frames"]
+            print(f"Exporting {frames} frames from video")
+            self.export_frames()
+        else:
+            print("Frames already exported, skipping frame extraction")
 
         # Generate depth maps using VideoDepthAnything with batch processing
         print("Running depth processor")
         depth_processor = VideoDepthAnythingProcessor(self.config)
-        depth_processor.process_video()
-
-        # Encode depth video
-        # output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
-        # print(f"Encoding depth video to {output_depth_video}")
-        # depth_processor.encode_video(output_depth_video)
+        depth_processor.process()
 
         # Generate sterescopic images using StereoVision with multithreading
         print("Running stereoscopy processor")
         stereo_processor = StereoVisionProcessor(self.config)
         stereo_processor.process()
+
+        # Encode depth video
+        output_depth_video = self.config["video_path"].parent / (
+                    self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
+        print(f"Encoding depth video to {output_depth_video}")
+        depth_processor.encode_video(output_depth_video)
 
         # Encode SBS video
         output_sbs_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_sbs" + self.config["video_path"].suffix)
