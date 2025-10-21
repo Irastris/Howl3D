@@ -4,6 +4,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+import yaml
 
 from howl3d.utils.directories import ensure_directory
 from thirdparty.video_depth_anything.video_depth import VideoDepthAnything
@@ -52,7 +53,6 @@ class VideoDepthAnythingProcessor:
             stderr=subprocess.PIPE
         )
 
-        # Stream normalized depth frames to ffmpeg
         d_min = self.config["depth_stats"]["min"]
         d_max = self.config["depth_stats"]["max"]
 
@@ -69,7 +69,14 @@ class VideoDepthAnythingProcessor:
         if process.returncode != 0:
             raise RuntimeError(f"ffmpeg encoding failed: {stderr.decode()}")
 
-    def process_frame_batch(self, start_idx, end_idx, model):
+    def should_compute_depths(self):
+        depths_yaml_path = Path(self.config["working_dir"]) / f"{self.config['vda_depth_dir']}.yaml"
+        if not depths_yaml_path.exists(): return True
+        if not self.config["depths_output_path"].exists(): return True
+        existing_depths = len(list(self.config["depths_output_path"].glob("depth_*.npy")))
+        return True if existing_depths != self.config["video_info"]["frames"] else False
+
+    def compute_depths(self, start_idx, end_idx, model):
         # Load frames from disk
         frames = []
 
@@ -95,28 +102,47 @@ class VideoDepthAnythingProcessor:
             depth_path = self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"
             np.save(str(depth_path), depth_map)
 
+        # Save depth stats to disk for reruns
+        depth_stats = {
+            "depth_min": self.config["depth_stats"]["min"],
+            "depth_max": self.config["depth_stats"]["max"]
+        }
+        depths_yaml_path = Path(self.config["working_dir"]) / f"{self.config['vda_depth_dir']}.yaml"
+        with open(depths_yaml_path, "w") as depth_yaml:
+            yaml.dump(depth_stats, depth_yaml)
+
         # Cleanup memory
         del frames
         del depths
         torch.cuda.empty_cache()
 
-    def process_video(self):
-        # Load VideoDepthAnything model
-        vda_model = self.config["vda_model"]
-        print(f"Loading VideoDepthAnything model, {vda_model} variant")
-        video_depth_anything = VideoDepthAnything(**vda_model_configs[vda_model], metric=False)
-        video_depth_anything.load_state_dict(torch.load(f"models/video_depth_anything/{vda_model}.pth", map_location="cpu"), strict=True)
-        video_depth_anything = video_depth_anything.to("cuda").eval()
+    def process(self):
+        # Check if depths are already exported
+        if self.should_compute_depths():
+            # Load VideoDepthAnything model
+            vda_model = self.config["vda_model"]
+            print(f"Loading VideoDepthAnything model, {vda_model} variant")
+            video_depth_anything = VideoDepthAnything(**vda_model_configs[vda_model], metric=False)
+            video_depth_anything.load_state_dict(torch.load(f"models/video_depth_anything/{vda_model}.pth", map_location="cpu"), strict=True)
+            video_depth_anything = video_depth_anything.to("cuda").eval()
 
-        # Ensure depth output directory exists, cleaning up existing contents if they exist
-        ensure_directory(self.config["depths_output_path"], True)
+            # Ensure depth output directory exists, cleaning up existing contents if they exist
+            ensure_directory(self.config["depths_output_path"], True)
 
-        # Compute depth in batches
-        print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
-        for batch_num, start_idx in enumerate(range(0, self.config["video_info"]["frames"], self.config["vda_batch_size"]), 1):
-            end_idx = min(start_idx + self.config["vda_batch_size"], self.config["video_info"]["frames"])
-            self.process_frame_batch(start_idx, end_idx, video_depth_anything)
+            # Compute depth in batches
+            print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
+            for batch_num, start_idx in enumerate(range(0, self.config["video_info"]["frames"], self.config["vda_batch_size"]), 1):
+                end_idx = min(start_idx + self.config["vda_batch_size"], self.config["video_info"]["frames"])
+                self.compute_depths(start_idx, end_idx, video_depth_anything)
 
-        # Cleanup model from GPU
-        del video_depth_anything
-        torch.cuda.empty_cache()
+            # Cleanup model from GPU
+            del video_depth_anything
+            torch.cuda.empty_cache()
+        else:
+            print("Depths already exported, skipping depth computation")
+            # Load existing depth stats from disk since computation was skipped
+            depths_yaml_path = Path(self.config["working_dir"]) / f"{self.config['vda_depth_dir']}.yaml"
+            with open(depths_yaml_path) as f:
+                depths_yaml = yaml.safe_load(f)
+            self.config["depth_stats"]["min"] = depths_yaml["depth_min"]
+            self.config["depth_stats"]["max"] = depths_yaml["depth_max"]
