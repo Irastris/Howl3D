@@ -55,18 +55,7 @@ class VideoConversion:
 
         capture.release()
 
-        return frame_count
-
-    def process_video(self, print_video_info=False):
-        if print_video_info:
-            print("Video Info:")
-            print(f"File Size: {self.config['video_info']['filesize'] / (1024 ** 2):.2f} MB")
-            print(f"Dimensions: {self.config['video_info']['width']}x{self.config['video_info']['height']}")
-            print(f"Total Frames: {self.config['video_info']['frames']}")
-            print(f"Framerate: {self.config['video_info']['framerate']:.2f} fps")
-            print(f"Duration: {self.config['video_info']['duration']:.2f} seconds")
-            print(f"Codec: {self.config['video_info']['codec']}")
-
+    def process_video(self):
         # Ensure frame output directory exists, cleaning up existing contents if they exist
         ensure_directory(self.config["frames_output_path"], True)
 
