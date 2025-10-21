@@ -24,12 +24,17 @@ class VideoDepthAnythingProcessor:
         # Remove file at output path if it exists
         output_path.unlink(missing_ok=True)
 
+        # Get dimensions from first depth frame. Necessary to provide to ffmpeg for stdin input.
+        first_depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
+        height, width = first_depth.shape
+
         # Build ffmpeg command
         ffmpeg_cmd = [
             "ffmpeg",
             "-y",  # Overwrite output file
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
+            "-s", f"{width}x{height}",
             "-pix_fmt", "gray",
             "-r", str(self.config["video_info"]["framerate"]),
             "-i", "-",
