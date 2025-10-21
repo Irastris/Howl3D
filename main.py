@@ -15,7 +15,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(config_file)
     # Add runtime variables into the config
     config["device"] = torch.device("cuda") # Set Torch device to be used for any applicable operations going forward
-    config["thread_pool"] = ThreadPoolExecutor(max_workers=8) # Construct pool for potential multithreaded processes
+    config["thread_pool"] = ThreadPoolExecutor(max_workers=config["threads"]) # Construct pool for any multithreaded processes going forward
 
     # Initialize the video converter
     video_path = "example.mp4" # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
