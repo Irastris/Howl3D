@@ -83,7 +83,7 @@ class VideoDepthAnythingProcessor:
             frames = np.stack(frames, axis=0)
 
         # Process through depth model
-        depths, _ = model.infer_video_depth(frames, self.config["video_info"]["framerate"], input_size=518, device="cuda", fp32=False)
+        depths, _ = model.infer_video_depth(frames, self.config["video_info"]["framerate"], input_size=580, device="cuda", fp32=False)
 
         # Update depth statistics
         self.config["depth_stats"]["min"] = min(self.config["depth_stats"]["min"], depths.min())
