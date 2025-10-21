@@ -7,18 +7,15 @@ import torch
 import yaml
 
 from howl3d.video_conversion import VideoConversion
-
-# Global variables
-device = torch.device("cuda") # Set Torch device to be used for any applicable operations going forward
-thread_pool = ThreadPoolExecutor(max_workers=8) # Construct pool for potential multithreaded processes
+from howl3d.utils.directories import cleanup_directory
 
 if __name__ == "__main__":
     # Load config from disk
     with open("./config.yml") as config_file:
         config = yaml.safe_load(config_file)
     # Add runtime variables into the config
-    config["device"] = device
-    config["thread_pool"] = thread_pool
+    config["device"] = torch.device("cuda") # Set Torch device to be used for any applicable operations going forward
+    config["thread_pool"] = ThreadPoolExecutor(max_workers=8) # Construct pool for potential multithreaded processes
 
     # Initialize the video converter
     video_path = "example.mp4" # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
@@ -26,3 +23,6 @@ if __name__ == "__main__":
 
     # Process the video
     video_conversion.process_video()
+
+    # Cleanup working directory if enabled
+    if config["cleanup"]: cleanup_directory(config["working_path"])

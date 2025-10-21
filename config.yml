@@ -1,5 +1,9 @@
-device: null
-thread_pool: null
+# Global settings
+cleanup: False # Whether to cleanup working directories after processing (currently, they will be wiped out on next run anyway)
+
+# Video Depth Anything settings
+vda_model: "vits" # Which model to use in ["vits", "vitb", "vitl"]
+vda_batch_size: 150 # Batch size to avoid flooding memory on longer videos
 
 # Working directories
 working_dir: "working"

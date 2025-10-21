@@ -1,10 +1,10 @@
 import os
-import shutil
 from pathlib import Path
 
 import cv2
 
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
+from howl3d.utils.directories import ensure_directory
 
 class VideoConversion:
     def __init__(self, config, video_path):
@@ -57,25 +57,7 @@ class VideoConversion:
 
         return frame_count
 
-    def ensure_working_directory(self, cleanup=True):
-        if cleanup and self.config["working_path"].exists():
-            shutil.rmtree(self.config["working_path"])
-        self.config["working_path"].mkdir(parents=True, exist_ok=True)
-
-    def ensure_frame_output_directory(self, cleanup=True):
-        if cleanup and self.config["frames_output_path"].exists():
-            shutil.rmtree(self.config["frames_output_path"])
-        self.config["frames_output_path"].mkdir(parents=True, exist_ok=True)
-
-    def cleanup_working_directory(self):
-        if self.config["working_path"].exists():
-            shutil.rmtree(self.config["working_path"])
-
-    def cleanup_frame_output_directory(self):
-        if self.config["frames_output_path"].exists():
-            shutil.rmtree(self.config["frames_output_path"])
-
-    def process_video(self, print_video_info=True, cleanup=True):
+    def process_video(self, print_video_info=False):
         if print_video_info:
             print("Video Info:")
             print(f"File Size: {self.config['video_info']['filesize'] / (1024 ** 2):.2f} MB")
@@ -85,8 +67,8 @@ class VideoConversion:
             print(f"Duration: {self.config['video_info']['duration']:.2f} seconds")
             print(f"Codec: {self.config['video_info']['codec']}")
 
-        self.ensure_working_directory()
-        self.ensure_frame_output_directory()
+        # Ensure frame output directory exists, cleaning up existing contents if they exist
+        ensure_directory(self.config["frames_output_path"], True)
 
         # Export frames
         frames = self.config["video_info"]["frames"]
@@ -97,6 +79,3 @@ class VideoConversion:
         print("Running depth processor")
         depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process_video()
-
-        # Cleanup working directories if enabled
-        if cleanup: self.cleanup_working_directory()

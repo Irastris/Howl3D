@@ -1,4 +1,3 @@
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -6,6 +5,7 @@ import cv2
 import numpy as np
 import torch
 
+from howl3d.utils.directories import ensure_directory
 from thirdparty.video_depth_anything.video_depth import VideoDepthAnything
 
 vda_model_configs = {
@@ -100,15 +100,6 @@ class VideoDepthAnythingProcessor:
         del depths
         torch.cuda.empty_cache()
 
-    def ensure_depth_output_dir(self, cleanup=True):
-        if cleanup and self.config["depth_output_path"].exists():
-            shutil.rmtree(self.config["depth_output_path"])
-        self.config["depth_output_path"].mkdir(parents=True, exist_ok=True)
-
-    def cleanup_frame_output_directory(self):
-        if self.config["depth_output_path"].exists():
-            shutil.rmtree(self.config["depth_output_path"])
-
     def process_video(self):
         # Load VideoDepthAnything model
         vda_model = self.config["vda_model"]
@@ -117,8 +108,8 @@ class VideoDepthAnythingProcessor:
         video_depth_anything.load_state_dict(torch.load(f"models/video_depth_anything/{vda_model}.pth", map_location="cpu"), strict=True)
         video_depth_anything = video_depth_anything.to("cuda").eval()
 
-        # Ensure depth output directory exists
-        self.ensure_depth_output_dir()
+        # Ensure depth output directory exists, cleaning up existing contents if they exist
+        ensure_directory(self.config["depth_output_path"], True)
 
         # Compute depth in batches
         print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
