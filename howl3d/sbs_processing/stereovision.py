@@ -43,6 +43,12 @@ class StereoVisionProcessor:
             raise RuntimeError(f"ffmpeg encoding failed: {process.stderr}")
 
     def process_frame(self, frame_idx):
+    def should_compute_sbs(self):
+        if not self.config["sbs_output_path"].exists(): return True
+        existing_frames = len(list(self.config["sbs_output_path"].glob("sbs_*.png")))
+        return True if existing_frames != self.config["video_info"]["frames"] else False
+
+    def compute_sbs(self, frame_idx):
         # Load base frame and get its dimensions
         frame_path = self.config["frames_output_path"] / f"frame_{frame_idx:06d}.png"
         image = Image.open(str(frame_path))
@@ -87,17 +93,22 @@ class StereoVisionProcessor:
         return
 
     def process(self):
-        print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads")
+        # Check if frames are already exported
+        if self.should_compute_sbs():
+            print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads")
 
-        # Ensure SBS output directory exists
-        ensure_directory(self.config["sbs_output_path"], True)
+            # Ensure SBS output directory exists
+            ensure_directory(self.config["sbs_output_path"], True)
 
-        # Construct a manually updated progress bar
-        pbar = tqdm(range(self.config["video_info"]["frames"]))
+            # Construct a manually updated progress bar
+            pbar = tqdm(range(self.config["video_info"]["frames"]))
 
-        # Submit futures to thread pool
-        futures = [self.config["thread_pool"].submit(self.process_frame, i) for i in range(self.config["video_info"]["frames"])]
-        for _ in concurrent.futures.as_completed(futures):
-            # Update the progress bar each time a future completes
-            pbar.update(1)
-            pbar.refresh()
+            # Submit futures to thread pool
+            futures = [self.config["thread_pool"].submit(self.compute_sbs, i) for i in
+                       range(self.config["video_info"]["frames"])]
+            for _ in concurrent.futures.as_completed(futures):
+                # Update the progress bar each time a future completes
+                pbar.update(1)
+                pbar.refresh()
+        else:
+            print("SBS frames already exported, skipping SBS computation")
