@@ -5,6 +5,7 @@ import cv2
 from tqdm import tqdm
 
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
+from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils.directories import ensure_directory
 
 class VideoConversion:
@@ -69,3 +70,13 @@ class VideoConversion:
         # output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
         # print(f"Encoding depth video to {output_depth_video}")
         # depth_processor.encode_video(output_depth_video)
+
+        # Generate sterescopic images using StereoVision with multithreading
+        print("Running stereoscopy processor")
+        stereo_processor = StereoVisionProcessor(self.config)
+        stereo_processor.process()
+
+        # Encode SBS video
+        output_sbs_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_sbs" + self.config["video_path"].suffix)
+        print(f"Encoding SBS video to {output_sbs_video}")
+        stereo_processor.encode_video(output_sbs_video)
