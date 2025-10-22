@@ -14,7 +14,3 @@ working_dir: "working"
 frames_dir: "frames"
 vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"
-
-# Video Depth Anything settings
-vda_model: "vitb" # Which model to use in ["vits", "vitb", "vitl"]
-vda_batch_size: 150 # Batch size to avoid flooding memory on longer videos
