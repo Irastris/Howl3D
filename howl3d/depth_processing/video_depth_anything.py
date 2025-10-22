@@ -53,9 +53,9 @@ class VideoDepthAnythingProcessor:
             stderr=subprocess.PIPE
         )
 
+        # Normalize each depth map before piping it to the ffmpeg process
         d_min = self.config["depth_stats"]["min"]
         d_max = self.config["depth_stats"]["max"]
-
         for i in range(self.config["video_info"]["frames"]):
             depth = np.load(str(self.config["depths_output_path"] / f"depth_{i:06d}.npy"))
             depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)

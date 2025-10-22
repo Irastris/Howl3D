@@ -113,10 +113,16 @@ class StereoVisionProcessor:
         sbs_image[:, width:] = image_array
 
         # Load corresponding depth map and normalize to 0-255 range using global depth stats
-        d_min = self.config["depth_stats"]["min"]
-        d_max = self.config["depth_stats"]["max"]
         depth = np.load(str(self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"))
-        depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
+        if self.config["depth_processor"] == "DepthPro":
+            depth = 1 / depth # Invert the map
+            d_min = max(1 / self.config["dp_depth_max"], depth.min())
+            d_max = min(depth.max(), 1 / self.config["dp_depth_min"])
+            depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
+        elif self.config["depth_processor"] == "VideoDepthAnything":
+            d_min = self.config["depth_stats"]["min"]
+            d_max = self.config["depth_stats"]["max"]
+            depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
 
         # Calculate pixel shifts
         pixel_shifts = (depth_norm * depth_scaling).astype(int)
@@ -156,8 +162,7 @@ class StereoVisionProcessor:
             pbar = tqdm(range(self.config["video_info"]["frames"]))
 
             # Submit futures to thread pool
-            futures = [self.config["thread_pool"].submit(self.compute_sbs, i) for i in
-                       range(self.config["video_info"]["frames"])]
+            futures = [self.config["thread_pool"].submit(self.compute_sbs, i) for i in range(self.config["video_info"]["frames"])]
             for _ in concurrent.futures.as_completed(futures):
                 # Update the progress bar each time a future completes
                 pbar.update(1)

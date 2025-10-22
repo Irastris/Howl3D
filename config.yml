@@ -1,6 +1,11 @@
 # Global settings
 threads: 8 # Number of threads to use for multithreaded operations
 cleanup: False # Whether to cleanup working directories after processing (currently, they will be wiped out on next run anyway)
+depth_processor: "DepthPro" # Which depth processor to use in ["DepthPro", "VideoDepthAnything"]
+
+# Depth Pro settings
+dp_depth_min: 0.1 # Minimum depth for normalization of Depth Pro estimated depth maps, in meters
+dp_depth_max: 250 # Maximum depth for normalization of Depth Pro estimated depth maps, in meters
 
 # Video Depth Anything settings
 vda_model: "vits" # Which model to use in ["vits", "vitb", "vitl"]
@@ -12,5 +17,6 @@ sv_depth_scale: 200 # Intensity of the depth effect. The original ComfyUI node d
 # Working directories
 working_dir: "working"
 frames_dir: "frames"
+dp_depth_dir: "depths_dp"
 vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"

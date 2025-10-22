@@ -4,6 +4,7 @@ from pathlib import Path
 import cv2
 from tqdm import tqdm
 
+from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils.directories import ensure_directory
@@ -72,7 +73,10 @@ class VideoConversion:
 
         # Generate depth maps using VideoDepthAnything with batch processing
         print("Running depth processor")
-        depth_processor = VideoDepthAnythingProcessor(self.config)
+        if self.config["depth_processor"] == "DepthPro":
+            depth_processor = DepthProProcessor(self.config)
+        elif self.config["depth_processor"] == "VideoDepthAnything":
+            depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process()
 
         # Generate sterescopic images using StereoVision with multithreading
@@ -81,8 +85,7 @@ class VideoConversion:
         stereo_processor.process()
 
         # Encode depth video
-        output_depth_video = self.config["video_path"].parent / (
-                    self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
+        output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
         print(f"Encoding depth video to {output_depth_video}")
         depth_processor.encode_video(output_depth_video)
 
