@@ -112,7 +112,7 @@ class StereoVisionProcessor:
         sbs_image[:, :width] = image_array
         sbs_image[:, width:] = image_array
 
-        # Load corresponding depth map and normalize to 0-255 range using global depth stats
+        # Load corresponding depth map and normalize to 0-255 range, using global depth stats if available
         depth = np.load(str(self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"))
         if self.config["depth_processor"] == "DepthPro":
             depth = 1 / depth # Invert the map
@@ -147,8 +147,6 @@ class StereoVisionProcessor:
         # Save the side-by-side frame
         sbs_frame_path = self.config["sbs_output_path"] / f"sbs_{frame_idx:06d}.png"
         cv2.imwrite(str(sbs_frame_path), cv2.cvtColor(sbs_image, cv2.COLOR_RGB2BGR))
-
-        return
 
     def process(self):
         # Check if frames are already exported

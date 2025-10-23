@@ -2,6 +2,7 @@
 threads: 8 # Number of threads to use for multithreaded operations
 cleanup: False # Whether to cleanup working directories after processing (currently, they will be wiped out on next run anyway)
 depth_processor: "DepthPro" # Which depth processor to use in ["DepthPro", "VideoDepthAnything"]
+stereo_processor: "ThyGate" # Which stereo processor to use in ["StereoVision", "ThyGate"]
 
 # Depth Pro settings
 dp_depth_min: 0.1 # Minimum depth for normalization of Depth Pro estimated depth maps, in meters
@@ -14,9 +15,17 @@ vda_batch_size: 150 # Batch size to avoid flooding memory on longer videos
 # StereoVision settings
 sv_depth_scale: 200 # Intensity of the depth effect. The original ComfyUI node defaults to 80, but I found that to be really weak.
 
+# ThyGate settings
+tg_fill_method: "polylines_sharp" # Which fill method to use in ["polylines_soft", "polylines_sharp"]
+tg_divergence: 5.5 # Recommended values are between 0.05 and 10.0
+tg_separation: 0.0
+tg_balance: 0.5 # How much processing to perform on each eye. 0.5 means depth will be applied to both eyes equally while 0.0 and 1.0 will exclusively apply depth to the left and right eye respectively
+tg_offset_exponent: 1.0
+
 # Working directories
 working_dir: "working"
 frames_dir: "frames"
 dp_depth_dir: "depths_dp"
 vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"
+tg_sbs_dir: "frames_sbs_tg"
