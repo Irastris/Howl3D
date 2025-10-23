@@ -66,13 +66,13 @@ class VideoConversion:
 
             # Export frames
             frames = self.config["video_info"]["frames"]
-            print(f"Exporting {frames} frames from video")
+            print(f"Exporting {frames} frames from video", flush=True)
             self.export_frames()
         else:
-            print("Frames already exported, skipping frame extraction")
+            print("Frames already exported, skipping frame extraction", flush=True)
 
         # Generate depth maps using VideoDepthAnything with batch processing
-        print("Running depth processor")
+        print("Running depth processor", flush=True)
         if self.config["depth_processor"] == "DepthPro":
             depth_processor = DepthProProcessor(self.config)
         elif self.config["depth_processor"] == "VideoDepthAnything":
@@ -80,16 +80,16 @@ class VideoConversion:
         depth_processor.process()
 
         # Generate sterescopic images using StereoVision with multithreading
-        print("Running stereoscopy processor")
+        print("Running stereoscopy processor", flush=True)
         stereo_processor = StereoVisionProcessor(self.config)
         stereo_processor.process()
 
         # Encode depth video
         output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
-        print(f"Encoding depth video to {output_depth_video}")
+        print(f"Encoding depth video to {output_depth_video}", flush=True)
         depth_processor.encode_video(output_depth_video)
 
         # Encode SBS video
         output_sbs_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_sbs" + self.config["video_path"].suffix)
-        print(f"Encoding SBS video to {output_sbs_video}")
+        print(f"Encoding SBS video to {output_sbs_video}", flush=True)
         stereo_processor.encode_video(output_sbs_video)

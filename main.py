@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # Initialize the video converter
     video_path = "example.mp4" # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
-    print(f"Processing {video_path}")
+    print(f"Processing {video_path}", flush=True)
     video_conversion = VideoConversion(config, video_path)
     video_conversion.process()
 

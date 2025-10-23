@@ -89,11 +89,11 @@ class DepthProProcessor:
     def process(self):
         if self.should_compute_depths():
             # Load Depth Pro model
-            print("Loading DepthPro model")
+            print("Loading DepthPro model", flush=True)
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
 
-            print(f"Computing depths for {self.config['video_info']['frames']} frames")
+            print(f"Computing depths for {self.config['video_info']['frames']} frames", flush=True)
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"], True)
@@ -111,4 +111,4 @@ class DepthProProcessor:
             del depth_pro
             torch.cuda.empty_cache()
         else:
-            print("Depths already exported, skipping depth computation")
+            print("Depths already exported, skipping depth computation", flush=True)

@@ -121,7 +121,7 @@ class VideoDepthAnythingProcessor:
         if self.should_compute_depths():
             # Load VideoDepthAnything model
             vda_model = self.config["vda_model"]
-            print(f"Loading VideoDepthAnything model, {vda_model} variant")
+            print(f"Loading VideoDepthAnything model, {vda_model} variant", flush=True)
             video_depth_anything = VideoDepthAnything(**vda_model_configs[vda_model], metric=False)
             video_depth_anything.load_state_dict(torch.load(f"models/video_depth_anything/{vda_model}.pth", map_location="cpu"), strict=True)
             video_depth_anything = video_depth_anything.to("cuda").eval()
@@ -130,7 +130,7 @@ class VideoDepthAnythingProcessor:
             ensure_directory(self.config["depths_output_path"], True)
 
             # Compute depth in batches
-            print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
+            print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}", flush=True)
             for batch_num, start_idx in enumerate(range(0, self.config["video_info"]["frames"], self.config["vda_batch_size"]), 1):
                 end_idx = min(start_idx + self.config["vda_batch_size"], self.config["video_info"]["frames"])
                 self.compute_depths(start_idx, end_idx, video_depth_anything)
@@ -139,7 +139,7 @@ class VideoDepthAnythingProcessor:
             del video_depth_anything
             torch.cuda.empty_cache()
         else:
-            print("Depths already exported, skipping depth computation")
+            print("Depths already exported, skipping depth computation", flush=True)
             # Load existing depth stats from disk since computation was skipped
             depths_yaml_path = Path(self.config["working_dir"]) / f"{self.config['vda_depth_dir']}.yaml"
             with open(depths_yaml_path) as f:
