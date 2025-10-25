@@ -9,6 +9,9 @@ from tqdm import tqdm
 
 from howl3d.utils.directories import ensure_directory
 
+from functools import partial
+print = partial(print, flush=True)
+
 # Adapted from ComfyUI-StereoVision -- https://github.com/DrMWeigand/ComfyUI-StereoVision
 class StereoVisionProcessor:
     def __init__(self, config):
@@ -151,7 +154,7 @@ class StereoVisionProcessor:
     def process(self):
         # Check if frames are already exported
         if self.should_compute_sbs():
-            print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads", flush=True)
+            print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"], True)
@@ -166,4 +169,4 @@ class StereoVisionProcessor:
                 pbar.update(1)
                 pbar.refresh()
         else:
-            print("SBS frames already exported, skipping SBS computation", flush=True)
+            print("SBS frames already exported, skipping SBS computation")

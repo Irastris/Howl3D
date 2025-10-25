@@ -9,6 +9,9 @@ from tqdm import tqdm
 
 from howl3d.utils.directories import ensure_directory
 
+from functools import partial
+print = partial(print, flush=True)
+
 # Adapted from stable-diffusion-webui-depthmap-script's stereoimage_generation.py -- https://github.com/thygate/stable-diffusion-webui-depthmap-script/blob/main/src/stereoimage_generation.py
 class ThyGateProcessor:
     def __init__(self, config):
@@ -228,7 +231,7 @@ class ThyGateProcessor:
     def process(self):
         # Check if frames are already exported
         if self.should_compute_sbs():
-            print(f"Computing {self.config['video_info']['frames']} SBS frames with numba parallelization", flush=True)
+            print(f"Computing {self.config['video_info']['frames']} SBS frames with numba parallelization")
 
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"], True)
@@ -243,4 +246,4 @@ class ThyGateProcessor:
                 pbar.update(1)
                 pbar.refresh()
         else:
-            print("SBS frames already exported, skipping SBS computation", flush=True)
+            print("SBS frames already exported, skipping SBS computation")

@@ -9,6 +9,9 @@ import yaml
 from howl3d.video_conversion import VideoConversion
 from howl3d.utils.directories import cleanup_directory
 
+from functools import partial
+print = partial(print, flush=True)
+
 if __name__ == "__main__":
     # Load config from disk
     with open("./config.yml") as config_file:
@@ -19,7 +22,7 @@ if __name__ == "__main__":
 
     # Initialize the video converter
     video_path = "example.mp4" # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
-    print(f"Processing {video_path}", flush=True)
+    print(f"Processing {video_path}")
     video_conversion = VideoConversion(config, video_path)
     video_conversion.process()
 
