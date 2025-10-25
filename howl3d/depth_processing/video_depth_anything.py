@@ -29,7 +29,8 @@ class VideoDepthAnythingProcessor:
         output_path.unlink(missing_ok=True)
 
         # Get dimensions from first depth frame. Necessary to provide to ffmpeg for stdin input.
-        first_depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
+        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
+        first_depth = np.load(str(depths_path / "depth_000000.npy"))
         height, width = first_depth.shape
 
         # Build ffmpeg command
@@ -60,7 +61,7 @@ class VideoDepthAnythingProcessor:
         d_min = self.config["depth_stats"]["min"]
         d_max = self.config["depth_stats"]["max"]
         for i in range(self.config["video_info"]["frames"]):
-            depth = np.load(str(self.config["depths_output_path"] / f"depth_{i:06d}.npy"))
+            depth = np.load(str(depths_path / f"depth_{i:06d}.npy"))
             depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
             process.stdin.write(depth_norm.tobytes())
 

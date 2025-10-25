@@ -5,6 +5,7 @@ import cv2
 from tqdm import tqdm
 
 from howl3d.depth_processing.depth_pro import DepthProProcessor
+from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.sbs_processing.thygate import ThyGateProcessor
@@ -83,6 +84,13 @@ class VideoConversion:
             depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process()
 
+        # Temporally smooth depth maps
+        # TODO: Implement some form of edge masking so that this doesn't result in an overall blurring of the depths, especially at higher window sizes
+        if self.config["enable_temporal_smoothing"]:
+            print("Running temporal smoothing processor")
+            ts_processor = TemporalSmoothingProcessor(self.config)
+            ts_processor.process()
+
         # Generate sterescopic images using StereoVision with multithreading
         print("Running stereoscopy processor")
         if self.config["stereo_processor"] == "StereoVision":
@@ -92,7 +100,7 @@ class VideoConversion:
         stereo_processor.process()
 
         # Encode depth video
-        output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + self.config["video_path"].suffix)
+        output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + ("_ts" if self.config["enable_temporal_smoothing"] else "") + self.config["video_path"].suffix)
         print(f"Encoding depth video to {output_depth_video}")
         depth_processor.encode_video(output_depth_video)
 

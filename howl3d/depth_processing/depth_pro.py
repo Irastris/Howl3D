@@ -23,7 +23,8 @@ class DepthProProcessor:
         output_path.unlink(missing_ok=True)
 
         # Get dimensions from first depth frame
-        first_depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
+        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
+        first_depth = np.load(str(depths_path / "depth_000000.npy"))
         height, width = first_depth.shape
 
         # Build ffmpeg command
@@ -52,7 +53,7 @@ class DepthProProcessor:
 
         # Normalize each depth map before piping it to the ffmpeg process
         for i in range(self.config["video_info"]["frames"]):
-            depth = np.load(str(self.config["depths_output_path"] / f"depth_{i:06d}.npy"))
+            depth = np.load(str(depths_path / f"depth_{i:06d}.npy"))
             # Invert the map
             depth = 1 / depth
             d_min = max(1 / self.config["dp_depth_max"], depth.min())

@@ -192,7 +192,8 @@ class ThyGateProcessor:
         width, height = image.size
 
         # Load corresponding depth map and normalize to 0-255 range, using global depth stats if available
-        depth = np.load(str(self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"))
+        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
+        depth = np.load(str(depths_path / f"depth_{frame_idx:06d}.npy"))
         if self.config["depth_processor"] == "DepthPro":
             depth = 1 / depth # Invert the map
             d_min = max(1 / self.config["dp_depth_max"], depth.min())
