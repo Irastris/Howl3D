@@ -8,11 +8,16 @@ from tqdm import tqdm
 class TemporalSmoothingProcessor(BaseDepthProcessor):
     def __init__(self, config):
         super().__init__(config, self.get_depth_dir_key(config["depth_processor"]))
+        self.config["depths_ts_output_path"] = (Path(self.config["working_dir"]) / self.config[self.get_depth_dir_key(self.config["depth_processor"])]) / "ts"
 
     @staticmethod
     def get_depth_dir_key(depth_processor):
         if depth_processor == "DepthPro": return "dp_depth_dir"
         elif depth_processor == "VideoDepthAnything": return "vda_depth_dir"
+
+    def should_process(self):
+        if not self.config["depths_ts_output_path"].exists(): return True
+        return len(list(self.config["depths_ts_output_path"].glob("depth_*.npy"))) != self.config["video_info"]["frames"]
 
     def smooth_depths(self, depths):
         mode = self.config["ts_mode"]
@@ -44,7 +49,7 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
 
     def process(self):
         # Check if smoothed depths are already exported
-        if self.should_process("depths_ts_output_path"):
+        if self.should_process():
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_ts_output_path"])
 

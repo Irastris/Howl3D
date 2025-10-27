@@ -11,7 +11,6 @@ class BaseDepthProcessor(ABC):
     def __init__(self, config, depth_dir_key):
         self.config = config
         self.config["depths_output_path"] = Path(self.config["working_dir"]) / self.config[depth_dir_key]
-        self.config["depths_ts_output_path"] = self.config["depths_output_path"] / "ts"
 
     def should_process(self, dir_key, addon=None):
         if addon and addon(): return True
