@@ -8,9 +8,9 @@ from howl3d.utils.directories import ensure_directory
 from thirdparty.depth_anything_v2.dpt import DepthAnythingV2
 
 da2_model_configs = {
-    'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},
-    'vitb': {'encoder': 'vitb', 'features': 128, 'out_channels': [96, 192, 384, 768]},
-    'vitl': {'encoder': 'vitl', 'features': 256, 'out_channels': [256, 512, 1024, 1024]},
+    "vits": {"encoder": "vits", "features": 64, "out_channels": [48, 96, 192, 384]},
+    "vitb": {"encoder": "vitb", "features": 128, "out_channels": [96, 192, 384, 768]},
+    "vitl": {"encoder": "vitl", "features": 256, "out_channels": [256, 512, 1024, 1024]},
 }
 
 # Adapted from DepthAnythingV2's run.py -- https://github.com/DepthAnything/Depth-Anything-V2/blob/main/run.py
