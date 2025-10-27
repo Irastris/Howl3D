@@ -1,18 +1,18 @@
 import numpy as np
 from pathlib import Path
+
+from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils.directories import ensure_directory
 from tqdm import tqdm
 
-class TemporalSmoothingProcessor:
+class TemporalSmoothingProcessor(BaseDepthProcessor):
     def __init__(self, config):
-        self.config = config
-        self.config["depths_ts_output_path"] = self.get_depths_output_path("_ts")
+        super().__init__(config, self.get_depth_dir_key(config["depth_processor"]))
 
-    def get_depths_output_path(self, suffix=""):
-        if self.config["depth_processor"] == "DepthPro":
-            return Path(self.config["working_dir"]) / (self.config["dp_depth_dir"] + suffix)
-        elif self.config["depth_processor"] == "VideoDepthAnything":
-            return Path(self.config["working_dir"]) / (self.config["vda_depth_dir"] + suffix)
+    @staticmethod
+    def get_depth_dir_key(depth_processor):
+        if depth_processor == "DepthPro": return "dp_depth_dir"
+        elif depth_processor == "VideoDepthAnything": return "vda_depth_dir"
 
     def smooth_depths(self, depths):
         mode = self.config["ts_mode"]
@@ -42,21 +42,16 @@ class TemporalSmoothingProcessor:
 
         return smoothed
 
-    def should_smooth_depths(self):
-        if not self.config["depths_ts_output_path"].exists(): return True
-        existing_depths = len(list(self.config["depths_ts_output_path"].glob("depth_*.npy")))
-        return True if existing_depths != self.config["video_info"]["frames"] else False
-
     def process(self):
         # Check if smoothed depths are already exported
-        if self.should_smooth_depths():
+        if self.should_process("depths_ts_output_path"):
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_ts_output_path"], True)
 
             # Load depths from disk
             depths = []
             for i in range(self.config["video_info"]["frames"]):
-                depths.append(np.load(str(self.get_depths_output_path() / f"depth_{i:06d}.npy")))
+                depths.append(np.load(str((Path(self.config["working_dir"]) / (self.config[self.get_depth_dir_key(self.config["depth_processor"])]) / f"depth_{i:06d}.npy"))))
 
             # Smooth depths
             depths = self.smooth_depths(depths)

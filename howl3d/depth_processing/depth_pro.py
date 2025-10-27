@@ -1,10 +1,8 @@
-import subprocess
-from pathlib import Path
-
 import numpy as np
 import torch
 from tqdm import tqdm
 
+from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils.directories import ensure_directory
 from thirdparty.depth_pro import create_model_and_transforms, load_rgb
 
@@ -12,67 +10,16 @@ from functools import partial
 print = partial(print, flush=True)
 
 # Adapted from DepthPro's run.py -- https://github.com/apple/ml-depth-pro/blob/main/src/depth_pro/cli/run.py
-class DepthProProcessor:
+class DepthProProcessor(BaseDepthProcessor):
     def __init__(self, config):
-        self.config = config
-        self.config["depths_output_path"] = Path(self.config["working_dir"]) / self.config["dp_depth_dir"]
-        self.config["depth_stats"] = {"min": float("inf"), "max": float("-inf")}
+        super().__init__(config, "dp_depth_dir")
 
-    def encode_video(self, output_path):
-        # Remove file at output path if it exists
-        output_path.unlink(missing_ok=True)
-
-        # Get dimensions from first depth frame
-        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
-        first_depth = np.load(str(depths_path / "depth_000000.npy"))
-        height, width = first_depth.shape
-
-        # Build ffmpeg command
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-y",  # Overwrite output file
-            "-f", "rawvideo",
-            "-vcodec", "rawvideo",
-            "-s", f"{width}x{height}",
-            "-pix_fmt", "gray",
-            "-r", str(self.config["video_info"]["framerate"]),
-            "-i", "-",
-            "-c:v", "libx264",
-            "-crf", "18",
-            "-pix_fmt", "yuv420p",
-            output_path
-        ]
-
-        # Start ffmpeg process
-        process = subprocess.Popen(
-            ffmpeg_cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-
-        # Normalize each depth map before piping it to the ffmpeg process
-        for i in range(self.config["video_info"]["frames"]):
-            depth = np.load(str(depths_path / f"depth_{i:06d}.npy"))
-            # Invert the map
-            depth = 1 / depth
-            d_min = max(1 / self.config["dp_depth_max"], depth.min())
-            d_max = min(depth.max(), 1 / self.config["dp_depth_min"])
-            depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
-            process.stdin.write(depth_norm.tobytes())
-
-        process.stdin.close()
-
-        # Wait for process to finish
-        stdout, stderr = process.communicate()
-
-        if process.returncode != 0:
-            raise RuntimeError(f"ffmpeg encoding failed: {stderr.decode()}")
-
-    def should_compute_depths(self):
-        if not self.config["depths_output_path"].exists(): return True
-        existing_depths = len(list(self.config["depths_output_path"].glob("depth_*.npy")))
-        return True if existing_depths != self.config["video_info"]["frames"] else False
+    def get_depth_normalization_params(self, depth):
+        depth = 1 / depth # Invert the map
+        d_min = max(1 / self.config["dp_depth_max"], depth.min())
+        d_max = min(depth.max(), 1 / self.config["dp_depth_min"])
+        depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
+        return depth_norm
 
     def compute_depths(self, frame_idx, model, transform):
         frame_path = self.config["frames_output_path"] / f"frame_{frame_idx:06d}.png"
@@ -91,7 +38,7 @@ class DepthProProcessor:
         np.save(str(depth_path), depth_map)
 
     def process(self):
-        if self.should_compute_depths():
+        if self.should_process("dp_depth_dir"):
             # Load Depth Pro model
             print("Loading DepthPro model")
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
