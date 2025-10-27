@@ -4,9 +4,6 @@ from pathlib import Path
 
 import numpy as np
 
-from functools import partial
-print = partial(print, flush=True)
-
 class BaseStereoProcessor(ABC):
     def __init__(self, config, sbs_dir_key):
         self.config = config

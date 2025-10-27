@@ -9,9 +9,6 @@ from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils.directories import ensure_directory
 from thirdparty.video_depth_anything.video_depth import VideoDepthAnything
 
-from functools import partial
-print = partial(print, flush=True)
-
 vda_model_configs = {
     "vits": {"encoder": "vits", "features": 64, "out_channels": [48, 96, 192, 384]},
     "vitb": {"encoder": "vitb", "features": 128, "out_channels": [96, 192, 384, 768]},

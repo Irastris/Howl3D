@@ -10,9 +10,6 @@ from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProce
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils.directories import ensure_directory
 
-from functools import partial
-print = partial(print, flush=True)
-
 class VideoConversion:
     def __init__(self, config, video_path):
         self.config = config

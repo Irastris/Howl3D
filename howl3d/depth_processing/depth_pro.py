@@ -6,9 +6,6 @@ from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils.directories import ensure_directory
 from thirdparty.depth_pro import create_model_and_transforms, load_rgb
 
-from functools import partial
-print = partial(print, flush=True)
-
 # Adapted from DepthPro's run.py -- https://github.com/apple/ml-depth-pro/blob/main/src/depth_pro/cli/run.py
 class DepthProProcessor(BaseDepthProcessor):
     def __init__(self, config):

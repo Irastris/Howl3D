@@ -4,9 +4,6 @@ from pathlib import Path
 
 import numpy as np
 
-from functools import partial
-print = partial(print, flush=True)
-
 class BaseDepthProcessor(ABC):
     def __init__(self, config, depth_dir_key):
         self.config = config

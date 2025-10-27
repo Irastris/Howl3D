@@ -9,9 +9,6 @@ import yaml
 from howl3d.video_conversion import VideoConversion
 from howl3d.utils.directories import cleanup_directory
 
-from functools import partial
-print = partial(print, flush=True)
-
 if __name__ == "__main__":
     # Load config from disk
     with open("./config.yml") as config_file:

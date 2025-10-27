@@ -8,9 +8,6 @@ from tqdm import tqdm
 from howl3d.sbs_processing.base import BaseStereoProcessor
 from howl3d.utils.directories import ensure_directory
 
-from functools import partial
-print = partial(print, flush=True)
-
 # Adapted from ComfyUI-StereoVision -- https://github.com/DrMWeigand/ComfyUI-StereoVision
 class StereoVisionProcessor(BaseStereoProcessor):
     def __init__(self, config):
