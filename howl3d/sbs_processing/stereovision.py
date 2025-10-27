@@ -1,104 +1,20 @@
 import concurrent.futures
-import subprocess
-from pathlib import Path
 
 import cv2
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
+from howl3d.sbs_processing.base import BaseStereoProcessor
 from howl3d.utils.directories import ensure_directory
 
 from functools import partial
 print = partial(print, flush=True)
 
 # Adapted from ComfyUI-StereoVision -- https://github.com/DrMWeigand/ComfyUI-StereoVision
-class StereoVisionProcessor:
+class StereoVisionProcessor(BaseStereoProcessor):
     def __init__(self, config):
-        self.config = config
-        self.config["sbs_output_path"] = Path(self.config["working_dir"]) / self.config["sv_sbs_dir"]
-
-    def encode_video(self, output_path):
-        # Remove file at output path if it exists
-        output_path.unlink(missing_ok=True)
-
-        # Build ffmpeg command
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-y",  # Overwrite output file
-            "-r", str(self.config["video_info"]["framerate"]),
-            "-i", str(self.config["sbs_output_path"] / "sbs_%06d.png"),
-            "-vf", "scale=-1:1080",
-            "-c:v", "libx264",
-            "-crf", "18",
-            "-pix_fmt", "yuv420p",
-            output_path
-        ]
-
-        # Start ffmpeg process
-        process = subprocess.run(
-            ffmpeg_cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-
-        if process.returncode != 0:
-            raise RuntimeError(f"ffmpeg encoding failed: {process.stderr}")
-
-    @staticmethod
-    def pad_frame(image):
-        height, width, channels = image.shape
-
-        # Each eye occupies half the width
-        eye_width = width // 2
-        eye_height = height
-
-        # Calculate the aspect ratio of each eye
-        current_aspect = eye_width / eye_height
-        target_aspect = 16 / 9
-
-        # Skip padding if the image is already 16:9
-        if abs(current_aspect - target_aspect) < 0.001:
-            return image
-
-        if current_aspect < target_aspect:
-            target_eye_width = int(eye_height * target_aspect)
-            total_padding = target_eye_width - eye_width
-
-            # Pad each eye separately
-            left_pad = total_padding // 2
-            right_pad = total_padding - left_pad
-
-            # Create padded image
-            new_width = width + 2 * total_padding
-            padded = np.zeros((height, new_width, channels), dtype=image.dtype)
-
-            # Copy eyes with padding
-            padded[:, left_pad:left_pad + eye_width, :] = image[:, :eye_width, :]
-            right_eye_start = target_eye_width + left_pad
-            padded[:, right_eye_start:right_eye_start + eye_width, :] = image[:, eye_width:, :]
-        else:
-            target_eye_height = int(eye_width / target_aspect)
-            total_padding = target_eye_height - eye_height
-
-            # Pad each eye separately
-            top_pad = total_padding // 2
-            bottom_pad = total_padding - top_pad
-
-            # Create padded image
-            new_height = height + total_padding
-            padded = np.zeros((new_height, width, channels), dtype=image.dtype)
-
-            # Copy eyes with vertical padding
-            padded[top_pad:top_pad + height, :, :] = image
-
-        return padded
-
-    def should_compute_sbs(self):
-        if not self.config["sbs_output_path"].exists(): return True
-        existing_frames = len(list(self.config["sbs_output_path"].glob("sbs_*.png")))
-        return True if existing_frames != self.config["video_info"]["frames"] else False
+        super().__init__(config, "sv_sbs_dir")
 
     def compute_sbs(self, frame_idx):
         # Load base frame and get its dimensions
@@ -115,18 +31,8 @@ class StereoVisionProcessor:
         sbs_image[:, :width] = image_array
         sbs_image[:, width:] = image_array
 
-        # Load corresponding depth map and normalize to 0-255 range, using global depth stats if available
-        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
-        depth = np.load(str(depths_path / f"depth_{frame_idx:06d}.npy"))
-        if self.config["depth_processor"] == "DepthPro":
-            depth = 1 / depth # Invert the map
-            d_min = max(1 / self.config["dp_depth_max"], depth.min())
-            d_max = min(depth.max(), 1 / self.config["dp_depth_min"])
-            depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
-        elif self.config["depth_processor"] == "VideoDepthAnything":
-            d_min = self.config["depth_stats"]["min"]
-            d_max = self.config["depth_stats"]["max"]
-            depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
+        # Load corresponding depth map and normalize it
+        depth_norm = self.get_depth_normalization_params(frame_idx)
 
         # Calculate pixel shifts
         pixel_shifts = (depth_norm * depth_scaling).astype(int)
@@ -154,7 +60,7 @@ class StereoVisionProcessor:
 
     def process(self):
         # Check if frames are already exported
-        if self.should_compute_sbs():
+        if self.should_process():
             print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
