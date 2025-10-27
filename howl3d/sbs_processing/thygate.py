@@ -235,12 +235,11 @@ class ThyGateProcessor:
             print(f"Computing {self.config['video_info']['frames']} SBS frames with numba parallelization")
 
             # Ensure SBS output directory exists
-            ensure_directory(self.config["sbs_output_path"], True)
+            ensure_directory(self.config["sbs_output_path"])
 
             # Construct a manually updated progress bar
             pbar = tqdm(range(self.config["video_info"]["frames"]))
 
-            # Submit futures to thread pool
             for i in range(self.config["video_info"]["frames"]):
                 self.compute_sbs(i)
                 # Update the progress bar each time a future completes

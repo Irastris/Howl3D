@@ -47,7 +47,7 @@ class DepthProProcessor(BaseDepthProcessor):
             print(f"Computing depths for {self.config['video_info']['frames']} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
-            ensure_directory(self.config["depths_output_path"], True)
+            ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
             pbar = tqdm(range(self.config["video_info"]["frames"]))

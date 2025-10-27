@@ -46,7 +46,7 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
         # Check if smoothed depths are already exported
         if self.should_process("depths_ts_output_path"):
             # Ensure depth output directory exists, cleaning up existing contents if they exist
-            ensure_directory(self.config["depths_ts_output_path"], True)
+            ensure_directory(self.config["depths_ts_output_path"])
 
             # Load depths from disk
             depths = []

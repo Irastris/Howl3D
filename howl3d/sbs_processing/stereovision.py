@@ -158,7 +158,7 @@ class StereoVisionProcessor:
             print(f"Computing {self.config['video_info']['frames']} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
-            ensure_directory(self.config["sbs_output_path"], True)
+            ensure_directory(self.config["sbs_output_path"])
 
             # Construct a manually updated progress bar
             pbar = tqdm(range(self.config["video_info"]["frames"]))
