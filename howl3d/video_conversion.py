@@ -8,7 +8,6 @@ from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
-from howl3d.sbs_processing.thygate import ThyGateProcessor
 from howl3d.utils.directories import ensure_directory
 
 from functools import partial
@@ -95,8 +94,6 @@ class VideoConversion:
         print("Running stereoscopy processor")
         if self.config["stereo_processor"] == "StereoVision":
             stereo_processor = StereoVisionProcessor(self.config)
-        elif self.config["stereo_processor"] == "ThyGate":
-            stereo_processor = ThyGateProcessor(self.config)
         stereo_processor.process()
 
         # Encode depth video

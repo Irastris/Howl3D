@@ -2,7 +2,7 @@
 threads: 8 # Number of threads to use for multithreaded operations
 cleanup: False # Whether to cleanup working directories after processing (currently, they will be wiped out on next run anyway)
 depth_processor: "DepthPro" # Which depth processor to use in ["DepthPro", "VideoDepthAnything"]
-stereo_processor: "ThyGate" # Which stereo processor to use in ["StereoVision", "ThyGate"]
+stereo_processor: "StereoVision" # Which stereo processor to use in ["StereoVision"]
 
 # Depth Pro settings
 dp_depth_min: 0.1 # Minimum depth for normalization of Depth Pro estimated depth maps, in meters
