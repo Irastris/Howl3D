@@ -98,7 +98,10 @@ class BaseStereoProcessor(ABC):
         depths_path = (self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"])
         depth = np.load(str(depths_path / f"depth_{frame_idx:06d}.npy"))
 
-        if self.config["depth_processor"] == "DepthPro":
+        if self.config["depth_processor"] == "DepthAnythingV2":
+            d_min = depth.min()
+            d_max = depth.max()
+        elif self.config["depth_processor"] == "DepthPro":
             depth = 1 / depth  # Invert the map
             d_min = max(1 / self.config["dp_depth_max"], depth.min())
             d_max = min(depth.max(), 1 / self.config["dp_depth_min"])

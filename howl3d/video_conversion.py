@@ -4,6 +4,7 @@ from pathlib import Path
 import cv2
 from tqdm import tqdm
 
+from howl3d.depth_processing.depth_anything_v2 import DepthAnythingV2Processor
 from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
@@ -74,7 +75,9 @@ class VideoConversion:
 
         # Generate depth maps using VideoDepthAnything with batch processing
         print("Running depth processor")
-        if self.config["depth_processor"] == "DepthPro":
+        if self.config["depth_processor"] == "DepthAnythingV2":
+            depth_processor = DepthAnythingV2Processor(self.config)
+        elif self.config["depth_processor"] == "DepthPro":
             depth_processor = DepthProProcessor(self.config)
         elif self.config["depth_processor"] == "VideoDepthAnything":
             depth_processor = VideoDepthAnythingProcessor(self.config)
