@@ -1,7 +1,7 @@
 # Global settings
 threads: 8 # Number of threads to use for multithreaded operations
 cleanup: False # Whether to cleanup working directories after processing (currently, they will be wiped out on next run anyway)
-depth_processor: "DepthAnythingV2" # Which depth processor to use in ["DepthAnythingV2", "DepthPro", "VideoDepthAnything"]
+depth_processor: "DistillAnyDepth" # Which depth processor to use in ["DepthAnythingV2", "DepthPro", "DistillAnyDepth", "VideoDepthAnything"]
 stereo_processor: "StereoVision" # Which stereo processor to use in ["StereoVision"]
 
 # Depth Anything V2 settings
@@ -10,6 +10,9 @@ da2_model: "vits" # Which model to use in ['vits', 'vitb', 'vitl']
 # Depth Pro settings
 dp_depth_min: 0.1 # Minimum depth for normalization of Depth Pro estimated depth maps, in meters
 dp_depth_max: 250 # Maximum depth for normalization of Depth Pro estimated depth maps, in meters
+
+# Distill Any Depth settings
+dad_model: "vits" # Which model to use in ['vits', 'vitb', 'vitl']
 
 # Video Depth Anything settings
 vda_model: "vits" # Which model to use in ["vits", "vitb", "vitl"]
@@ -35,5 +38,6 @@ working_dir: "working"
 frames_dir: "frames"
 da2_depth_dir: "depths_da2"
 dp_depth_dir: "depths_dp"
+dad_depth_dir: "depths_dad"
 vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"
