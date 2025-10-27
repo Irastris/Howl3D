@@ -13,7 +13,7 @@ vda_model: "vits" # Which model to use in ["vits", "vitb", "vitl"]
 vda_batch_size: 150 # Batch size to avoid flooding memory on longer videos
 
 # Temporal Smoothing Settings
-enable_temporal_smoothing: True # Temporally smooth the estimated depths for improved consistency frame-to-frame, recommended if your chosen depth processor produces a lot of flicker
+enable_temporal_smoothing: False # Temporally smooth the estimated depths for improved consistency frame-to-frame, recommended if your chosen depth processor produces a lot of flicker
 ts_mode: "bidirectional" # Which smoothing mode to use in ["backward", "forward", "bidirectional"]
 ts_window_size: 3 # How many frames to sample for smoothing the current frame. Higher values further reduce flicker at the cost of increased blur.
 
@@ -33,4 +33,3 @@ frames_dir: "frames"
 dp_depth_dir: "depths_dp"
 vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"
-tg_sbs_dir: "frames_sbs_tg"
