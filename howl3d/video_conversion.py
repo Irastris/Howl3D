@@ -25,7 +25,7 @@ class MediaConversion:
         self.config["frames_output_path"] = Path(self.config["working_dir"]) / self.config["frames_dir"]
 
     def get_media_info(self):
-        if self.config["media_path"].suffix.lower() in [".mkv", ".mp4", ".webm"]:
+        if self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
             image = cv2.imread(str(self.config["media_path"]))
 
             # Extract image properties
@@ -38,7 +38,7 @@ class MediaConversion:
                 height=height,
                 frames=1
             )
-        elif self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
+        elif self.config["media_path"].suffix.lower() in [".mkv", ".mp4", ".webm"]:
             capture = cv2.VideoCapture(str(self.config["media_path"]))
 
             # Extract video properties
