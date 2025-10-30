@@ -113,11 +113,11 @@ class MediaConversion:
         stereo_processor.process()
 
         # Save depth
-        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"] else "") + self.config["media_path"].suffix)
+        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"] else "") + ".mp4")
         # print(f"Saving depth to {output_depth}")
         depth_processor.save(output_depth)
 
         # Save SBS
-        output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + self.config["media_path"].suffix)
+        output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + ".mp4")
         # print(f"Saving SBS to {output_sbs}")
         stereo_processor.save(output_sbs)
