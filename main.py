@@ -18,7 +18,7 @@ if __name__ == "__main__":
     config["thread_pool"] = ThreadPoolExecutor(max_workers=config["threads"]) # Construct pool for any multithreaded processes going forward
 
     # Initialize the media converter
-    media_conversion = MediaConversion(config, "./example.mp4") # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
+    media_conversion = MediaConversion(config, "./example.png") # TODO: Implement a proper argsparse or similar. Assuming this is video file in the same directory as the script during early development.
     media_conversion.process()
 
     # Cleanup working directory if enabled

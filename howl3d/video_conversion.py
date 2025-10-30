@@ -24,30 +24,44 @@ class MediaConversion:
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = Path(self.config["working_dir"]) / self.config["frames_dir"]
 
-    def get_video_info(self):
-        capture = cv2.VideoCapture(str(self.config["media_path"]))
+    def get_media_info(self):
+        if self.config["media_path"].suffix.lower() in [".mkv", ".mp4", ".webm"]:
+            image = cv2.imread(str(self.config["media_path"]))
 
-        # Extract video properties, calculate duration, get codec
-        width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        framerate = capture.get(cv2.CAP_PROP_FPS)
-        duration = frames / framerate
-        fourcc = int(capture.get(cv2.CAP_PROP_FOURCC))
-        codec = "".join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)]).upper()
+            # Extract image properties
+            height, width = image.shape[:2]
 
-        capture.release()
+            return MediaInfo(
+                type="image",
+                filesize=self.config["media_path"].stat().st_size,
+                width=width,
+                height=height,
+                frames=1
+            )
+        elif self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
+            capture = cv2.VideoCapture(str(self.config["media_path"]))
 
-        return MediaInfo(
-            type="video",
-            filesize=self.config["media_path"].stat().st_size,
-            width=width,
-            height=height,
-            frames=frames,
-            framerate=framerate,
-            duration=duration,
-            codec=codec
-        )
+            # Extract video properties
+            width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+            framerate = capture.get(cv2.CAP_PROP_FPS)
+            duration = frames / framerate if framerate > 0 else 0
+            fourcc = int(capture.get(cv2.CAP_PROP_FOURCC))
+            codec = "".join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)]).upper()
+
+            capture.release()
+
+            return MediaInfo(
+                type="video",
+                filesize=self.config["media_path"].stat().st_size,
+                width=width,
+                height=height,
+                frames=frames,
+                framerate=framerate,
+                duration=duration,
+                codec=codec
+            )
 
     def should_export_frames(self):
         if not self.config["frames_output_path"].exists(): return True
