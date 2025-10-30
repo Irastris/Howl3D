@@ -11,17 +11,21 @@ from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProce
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils.directories import ensure_directory
 
-class VideoConversion:
-    def __init__(self, config, video_path):
+class MediaInfo:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+class MediaConversion:
+    def __init__(self, config, media_path):
         self.config = config
-        self.config["video_name"] = video_path
-        self.config["video_path"] = Path(video_path)
-        self.config["video_info"] = self.get_video_info()
+        self.config["media_path"] = Path(media_path)
+        self.config["media_info"] = self.get_video_info()
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = Path(self.config["working_dir"]) / self.config["frames_dir"]
 
     def get_video_info(self):
-        capture = cv2.VideoCapture(str(self.config["video_path"]))
+        capture = cv2.VideoCapture(str(self.config["media_path"]))
 
         # Extract video properties, calculate duration, get codec
         width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -32,29 +36,27 @@ class VideoConversion:
         fourcc = int(capture.get(cv2.CAP_PROP_FOURCC))
         codec = "".join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)]).upper()
 
-        # Build dictionary
-        video_info = {
-            "filesize": self.config["video_path"].stat().st_size,
-            "width": width,
-            "height": height,
-            "frames": frames,
-            "framerate": framerate,
-            "duration": duration,
-            "codec": codec
-        }
-
         capture.release()
 
-        return video_info
+        return MediaInfo(
+            type="video",
+            filesize=self.config["media_path"].stat().st_size,
+            width=width,
+            height=height,
+            frames=frames,
+            framerate=framerate,
+            duration=duration,
+            codec=codec
+        )
 
     def should_export_frames(self):
         if not self.config["frames_output_path"].exists(): return True
         existing_frames = len(list(self.config["frames_output_path"].glob("frame_*.png")))
-        return True if existing_frames != self.config["video_info"]["frames"] else False
+        return True if existing_frames != self.config["media_info"].frames else False
 
     def export_frames(self):
-        capture = cv2.VideoCapture(str(self.config["video_path"]))
-        for i in tqdm(range(self.config["video_info"]["frames"])):
+        capture = cv2.VideoCapture(str(self.config["media_path"]))
+        for i in tqdm(range(self.config["media_info"].frames)):
             _, frame = capture.read()
             frame_filename = self.config["frames_output_path"] / f"frame_{i:06d}.png"
             cv2.imwrite(str(frame_filename), frame)
@@ -67,7 +69,7 @@ class VideoConversion:
             ensure_directory(self.config["frames_output_path"])
 
             # Export frames
-            frames = self.config["video_info"]["frames"]
+            frames = self.config["media_info"].frames
             print(f"Exporting {frames} frames from video")
             self.export_frames()
         else:
@@ -98,12 +100,12 @@ class VideoConversion:
             stereo_processor = StereoVisionProcessor(self.config)
         stereo_processor.process()
 
-        # Encode depth video
-        output_depth_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_depths" + ("_ts" if self.config["enable_temporal_smoothing"] else "") + self.config["video_path"].suffix)
-        print(f"Encoding depth video to {output_depth_video}")
-        depth_processor.encode_video(output_depth_video)
+        # Save depth
+        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["enable_temporal_smoothing"] else "") + self.config["media_path"].suffix)
+        print(f"Encoding depth video to {output_depth}")
+        depth_processor.encode_video(output_depth)
 
-        # Encode SBS video
-        output_sbs_video = self.config["video_path"].parent / (self.config["video_path"].stem + "_sbs" + self.config["video_path"].suffix)
-        print(f"Encoding SBS video to {output_sbs_video}")
-        stereo_processor.encode_video(output_sbs_video)
+        # Save SBS
+        output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + self.config["media_path"].suffix)
+        print(f"Encoding SBS video to {output_sbs}")
+        stereo_processor.encode_video(output_sbs)

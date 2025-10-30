@@ -59,16 +59,16 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
             distill_any_depth.load_state_dict(load_file(f"models/distill_any_depth/{dad_model}.safetensors"))
             distill_any_depth = distill_any_depth.to(self.config["device"]) # TODO: DepthAnythingV2 has an eval() here, is that really unnecessary?
 
-            print(f"Computing depths for {self.config['video_info']['frames']} frames")
+            print(f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            pbar = tqdm(range(self.config["video_info"]["frames"]))
+            pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
-            for i in range(self.config["video_info"]["frames"]):
+            for i in range(self.media_info.frames):
                 self.compute_depths(i, distill_any_depth)
                 pbar.update(1)
                 pbar.refresh()

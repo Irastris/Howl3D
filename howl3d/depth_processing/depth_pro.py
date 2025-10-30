@@ -41,16 +41,16 @@ class DepthProProcessor(BaseDepthProcessor):
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
 
-            print(f"Computing depths for {self.config['video_info']['frames']} frames")
+            print(f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            pbar = tqdm(range(self.config["video_info"]["frames"]))
+            pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
-            for i in range(self.config["video_info"]["frames"]):
+            for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_pro, depth_pro_transform)
                 pbar.update(1)
                 pbar.refresh()

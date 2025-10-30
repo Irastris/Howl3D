@@ -8,12 +8,14 @@ class BaseStereoProcessor(ABC):
     def __init__(self, config, sbs_dir_key):
         self.config = config
         self.config["sbs_output_path"] = Path(self.config["working_dir"]) / self.config[sbs_dir_key]
+        # Shortcuts
+        self.media_info = self.config["media_info"]
 
     def should_process(self, addon=None):
         if addon and addon(): return True
         path = self.config["sbs_output_path"]
         if not path.exists(): return True
-        return len(list(path.glob("sbs_*.png"))) != self.config["video_info"]["frames"]
+        return len(list(path.glob("sbs_*.png"))) != self.media_info.frames
 
     @staticmethod
     def pad_frame(image):
@@ -74,7 +76,7 @@ class BaseStereoProcessor(ABC):
         ffmpeg_cmd = [
             "ffmpeg",
             "-y",  # Overwrite output file
-            "-r", str(self.config["video_info"]["framerate"]),
+            "-r", str(self.media_info.framerate),
             "-i", str(self.config["sbs_output_path"] / "sbs_%06d.png"),
             "-vf", "scale=-1:1080",
             "-c:v", "libx264",

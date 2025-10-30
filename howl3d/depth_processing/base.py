@@ -8,12 +8,14 @@ class BaseDepthProcessor(ABC):
     def __init__(self, config, depth_dir_key):
         self.config = config
         self.config["depths_output_path"] = Path(self.config["working_dir"]) / self.config[depth_dir_key]
+        # Shortcuts
+        self.media_info = self.config["media_info"]
 
     def should_process(self, dir_key, addon=None):
         if addon and addon(): return True
         path = Path(self.config["working_dir"]) / self.config[dir_key]
         if not path.exists(): return True
-        return len(list(path.glob("depth_*.npy"))) != self.config["video_info"]["frames"]
+        return len(list(path.glob("depth_*.npy"))) != self.media_info.frames
 
     def get_depth_normalization_params(self, depth):
         raise NotImplementedError("Subclasses must implement depth normalization")
@@ -35,7 +37,7 @@ class BaseDepthProcessor(ABC):
             "-vcodec", "rawvideo",
             "-s", f"{width}x{height}",
             "-pix_fmt", "gray",
-            "-r", str(self.config["video_info"]["framerate"]),
+            "-r", str(self.media_info.framerate),
             "-i", "-",
             "-c:v", "libx264",
             "-crf", "18",
@@ -52,7 +54,7 @@ class BaseDepthProcessor(ABC):
         )
 
         # Normalize and write each depth map
-        for i in range(self.config["video_info"]["frames"]):
+        for i in range(self.media_info.frames):
             depth = np.load(str(depths_path / f"depth_{i:06d}.npy"))
             depth_norm = self.get_depth_normalization_params(depth)
             process.stdin.write(depth_norm.tobytes())

@@ -33,9 +33,6 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
         # Process through depth model
         depth = model.infer_image(image, 518)
 
-        # TODO: Is this necessary?
-        # depth = np.repeat(depth[..., np.newaxis], 3, axis=-1)
-
         # Save depth map to disk
         depth_path = self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"
         np.save(str(depth_path), depth)
@@ -49,16 +46,16 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
             depth_anything.load_state_dict(torch.load(f"models/depth_anything_v2/{da2_model}.pth", map_location="cpu"), strict=True)
             depth_anything = depth_anything.to("cuda").eval()
 
-            print(f"Computing depths for {self.config['video_info']['frames']} frames")
+            print(f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            pbar = tqdm(range(self.config["video_info"]["frames"]))
+            pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
-            for i in range(self.config["video_info"]["frames"]):
+            for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_anything)
                 pbar.update(1)
                 pbar.refresh()

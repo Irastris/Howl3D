@@ -19,7 +19,7 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
 
     def should_process(self):
         if not self.config["depths_ts_output_path"].exists(): return True
-        return len(list(self.config["depths_ts_output_path"].glob("depth_*.npy"))) != self.config["video_info"]["frames"]
+        return len(list(self.config["depths_ts_output_path"].glob("depth_*.npy"))) != self.media_info.frames
 
     def smooth_depths(self, depths):
         mode = self.config["ts_mode"]
@@ -57,7 +57,7 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
 
             # Load depths from disk
             depths = []
-            for i in range(self.config["video_info"]["frames"]):
+            for i in range(self.media_info.frames):
                 depths.append(np.load(str((Path(self.config["working_dir"]) / (self.config[self.get_depth_dir_key(self.config["depth_processor"])]) / f"depth_{i:06d}.npy"))))
 
             # Smooth depths

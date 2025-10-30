@@ -45,7 +45,7 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
             frames = np.stack(frames, axis=0)
 
         # Process through depth model
-        depths, _ = model.infer_video_depth(frames, self.config["video_info"]["framerate"], input_size=580, device="cuda", fp32=False)
+        depths, _ = model.infer_video_depth(frames, self.media_info.framerate, input_size=580, device="cuda", fp32=False)
 
         # Update depth statistics
         self.config["depth_stats"]["min"] = min(self.config["depth_stats"]["min"], depths.min())
@@ -93,9 +93,9 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
             ensure_directory(self.config["depths_output_path"])
 
             # Compute depth in batches
-            print(f"Computing depths for {self.config['video_info']['frames']} frames in batches of {self.config['vda_batch_size']}")
-            for batch_num, start_idx in enumerate(range(0, self.config["video_info"]["frames"], self.config["vda_batch_size"]), 1):
-                end_idx = min(start_idx + self.config["vda_batch_size"], self.config["video_info"]["frames"])
+            print(f"Computing depths for {self.media_info.frames} frames in batches of {self.config['vda_batch_size']}")
+            for batch_num, start_idx in enumerate(range(0, self.media_info.frames, self.config["vda_batch_size"]), 1):
+                end_idx = min(start_idx + self.config["vda_batch_size"], self.media_info.frames)
                 self.compute_depths(start_idx, end_idx, video_depth_anything)
 
             # Cleanup model from GPU
