@@ -37,27 +37,28 @@ class DepthProProcessor(BaseDepthProcessor):
     def process(self):
         if self.should_process("dp_depth_dir"):
             # Load Depth Pro model
-            print("Loading DepthPro model")
+            # print("Loading DepthPro model")
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
 
-            print(f"Computing depths for {self.media_info.frames} frames")
+            # print(f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            if self.media_info.type == "video": pbar = tqdm(range(self.media_info.frames))
+            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_pro, depth_pro_transform)
                 if self.media_info.type == "video":
-                    pbar.update(1)
-                    pbar.refresh()
+                    pass
+                    # pbar.update(1)
+                    # pbar.refresh()
 
             # Cleanup model from GPU
             del depth_pro
             torch.cuda.empty_cache()
         else:
-            print("Depths already exported, skipping depth computation")
+            pass # print("Depths already exported, skipping depth computation")

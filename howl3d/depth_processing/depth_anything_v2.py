@@ -41,28 +41,29 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
         if self.should_process("da2_depth_dir"):
             # Load DepthAnythingV2 model
             da2_model = self.config["da2_model"]
-            print(f"Loading DepthAnythingV2 model, {da2_model} variant")
+            # print(f"Loading DepthAnythingV2 model, {da2_model} variant")
             depth_anything = DepthAnythingV2(**da2_model_configs[da2_model])
             depth_anything.load_state_dict(torch.load(f"models/depth_anything_v2/{da2_model}.pth", map_location="cpu"), strict=True)
             depth_anything = depth_anything.to("cuda").eval()
 
-            print(f"Computing depths for {self.media_info.frames} frames")
+            # print(f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            if self.media_info.type == "video": pbar = tqdm(range(self.media_info.frames))
+            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_anything)
                 if self.media_info.type == "video":
-                    pbar.update(1)
-                    pbar.refresh()
+                    pass
+                    # pbar.update(1)
+                    # pbar.refresh()
 
             # Cleanup model from GPU
             del depth_anything
             torch.cuda.empty_cache()
         else:
-            print("Depths already exported, skipping depth computation")
+            pass # print("Depths already exported, skipping depth computation")

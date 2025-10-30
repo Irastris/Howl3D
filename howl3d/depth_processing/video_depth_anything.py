@@ -25,7 +25,6 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
         self.load_depth_stats()
         d_min = self.depth_stats["min"]
         d_max = self.depth_stats["max"]
-        print(f"d_min: {d_min}\nd_max: {d_max}")
         depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
         return depth_norm
 
@@ -84,7 +83,7 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
         if self.should_process("vda_depth_dir", self.check_yaml_exists):
             # Load VideoDepthAnything model
             vda_model = self.config["vda_model"]
-            print(f"Loading VideoDepthAnything model, {vda_model} variant")
+            # print(f"Loading VideoDepthAnything model, {vda_model} variant")
             video_depth_anything = VideoDepthAnything(**vda_model_configs[vda_model], metric=False)
             video_depth_anything.load_state_dict(torch.load(f"models/video_depth_anything/{vda_model}.pth", map_location="cpu"), strict=True)
             video_depth_anything = video_depth_anything.to("cuda").eval()
@@ -93,7 +92,7 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
             ensure_directory(self.config["depths_output_path"])
 
             # Compute depth in batches
-            print(f"Computing depths for {self.media_info.frames} frames in batches of {self.config['vda_batch_size']}")
+            # print(f"Computing depths for {self.media_info.frames} frames in batches of {self.config['vda_batch_size']}")
             for batch_num, start_idx in enumerate(range(0, self.media_info.frames, self.config["vda_batch_size"]), 1):
                 end_idx = min(start_idx + self.config["vda_batch_size"], self.media_info.frames)
                 self.compute_depths(start_idx, end_idx, video_depth_anything)
@@ -102,4 +101,4 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
             del video_depth_anything
             torch.cuda.empty_cache()
         else:
-            print("Depths already exported, skipping depth computation")
+            pass # print("Depths already exported, skipping depth computation")

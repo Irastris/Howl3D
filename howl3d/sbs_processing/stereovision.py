@@ -58,20 +58,21 @@ class StereoVisionProcessor(BaseStereoProcessor):
     def process(self):
         # Check if frames are already exported
         if self.should_process():
-            print(f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
+            # print(f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"])
 
             # Construct a manually updated progress bar
-            if self.media_info.type == "video": pbar = tqdm(range(self.media_info.frames))
+            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
 
             # Submit futures to thread pool
             futures = [self.config["thread_pool"].submit(self.compute_sbs, i) for i in range(self.media_info.frames)]
             for _ in concurrent.futures.as_completed(futures):
                 if self.media_info.type == "video":
                     # Update the progress bar each time a future completes
-                    pbar.update(1)
-                    pbar.refresh()
+                    pass
+                    # pbar.update(1)
+                    # pbar.refresh()
         else:
-            print("SBS frames already exported, skipping SBS computation")
+            pass # print("SBS frames already exported, skipping SBS computation")

@@ -26,7 +26,7 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
         window_size = self.config["ts_window_size"]
 
         smoothed = []
-        for i in tqdm(range(len(depths))):
+        for i in range(len(depths)): # tqdm()
             if mode == "backward":
                 start_idx = max(0, i - window_size + 1)
                 end_idx = i + 1
@@ -68,4 +68,4 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
                 depth_path = self.config["depths_ts_output_path"] / f"depth_{i:06d}.npy"
                 np.save(str(depth_path), depth_map)
         else:
-            print("Temporally smoothed depths already exported, skipping smoothed depth computation")
+            pass # print("Temporally smoothed depths already exported, skipping smoothed depth computation")
