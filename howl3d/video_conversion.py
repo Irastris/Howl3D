@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import cv2
@@ -35,7 +34,7 @@ class VideoConversion:
 
         # Build dictionary
         video_info = {
-            "filesize": os.path.getsize(self.config["video_path"]),
+            "filesize": self.config["video_path"].stat().st_size,
             "width": width,
             "height": height,
             "frames": frames,
@@ -64,8 +63,8 @@ class VideoConversion:
     def process(self):
         # Check if frames are already exported
         if self.should_export_frames():
-            # Ensure frame output directory exists, cleaning up existing contents if they exist
-            ensure_directory(self.config["frames_output_path"], True)
+            # Ensure frame output directory exists
+            ensure_directory(self.config["frames_output_path"])
 
             # Export frames
             frames = self.config["video_info"]["frames"]
@@ -74,7 +73,7 @@ class VideoConversion:
         else:
             print("Frames already exported, skipping frame extraction")
 
-        # Generate depth maps using VideoDepthAnything with batch processing
+        # Generate depth maps
         print("Running depth processor")
         if self.config["depth_processor"] == "DepthAnythingV2":
             depth_processor = DepthAnythingV2Processor(self.config)
