@@ -1,6 +1,7 @@
 # Global settings
 concurrent_jobs: 1 # Maximum number of jobs to process concurrently. I'm not sure if the average PC would ever be able to handle more than 1.
 threads: 8 # Number of threads to use for multithreaded operations
+enable_detailed_exceptions: False # Whether to include full tracebacks when the job manager raises exceptions
 cleanup: False # Whether to cleanup working directories after processing or retain intermediate data for reruns
 depth_processor: "DepthPro" # Which depth processor to use in ["DepthAnythingV2", "DepthPro", "DistillAnyDepth", "VideoDepthAnything"]
 stereo_processor: "StereoVision" # Which stereo processor to use in ["StereoVision"]
