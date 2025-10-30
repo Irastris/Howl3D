@@ -65,13 +65,14 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
             ensure_directory(self.config["depths_output_path"])
 
             # Construct a manually updated progress bar
-            pbar = tqdm(range(self.media_info.frames))
+            if self.media_info.type == "video": pbar = tqdm(range(self.media_info.frames))
 
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, distill_any_depth)
-                pbar.update(1)
-                pbar.refresh()
+                if self.media_info.type == "video":
+                    pbar.update(1)
+                    pbar.refresh()
 
             # Cleanup model from GPU
             del distill_any_depth

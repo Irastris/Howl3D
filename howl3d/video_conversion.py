@@ -20,7 +20,7 @@ class MediaConversion:
     def __init__(self, config, media_path):
         self.config = config
         self.config["media_path"] = Path(media_path)
-        self.config["media_info"] = self.get_video_info()
+        self.config["media_info"] = self.get_media_info()
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = Path(self.config["working_dir"]) / self.config["frames_dir"]
 
@@ -78,16 +78,13 @@ class MediaConversion:
 
     def process(self):
         # Check if frames are already exported
-        if self.should_export_frames():
+        if self.config["media_info"].type == "video" and self.should_export_frames():
             # Ensure frame output directory exists
             ensure_directory(self.config["frames_output_path"])
 
             # Export frames
-            frames = self.config["media_info"].frames
-            print(f"Exporting {frames} frames from video")
+            print(f"Exporting {self.config['media_info'].frames} frames from video")
             self.export_frames()
-        else:
-            print("Frames already exported, skipping frame extraction")
 
         # Generate depth maps
         print("Running depth processor")
@@ -103,7 +100,7 @@ class MediaConversion:
 
         # Temporally smooth depth maps
         # TODO: Implement some form of edge masking so that this doesn't result in an overall blurring of the depths, especially at higher window sizes
-        if self.config["enable_temporal_smoothing"]:
+        if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"]:
             print("Running temporal smoothing processor")
             ts_processor = TemporalSmoothingProcessor(self.config)
             ts_processor.process()
@@ -115,11 +112,11 @@ class MediaConversion:
         stereo_processor.process()
 
         # Save depth
-        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["enable_temporal_smoothing"] else "") + self.config["media_path"].suffix)
-        print(f"Encoding depth video to {output_depth}")
+        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"] else "") + self.config["media_path"].suffix)
+        print(f"Saving depth to {output_depth}")
         depth_processor.encode_video(output_depth)
 
         # Save SBS
         output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + self.config["media_path"].suffix)
-        print(f"Encoding SBS video to {output_sbs}")
+        print(f"Saving SBS to {output_sbs}")
         stereo_processor.encode_video(output_sbs)
