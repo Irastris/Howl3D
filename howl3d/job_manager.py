@@ -1,11 +1,19 @@
 import hashlib
+from enum import Enum
 from pathlib import Path
+
+class JobStatus(Enum):
+    Queued = 1
+    Processing = 2
+    Completed = 3
+    Failed = 4
 
 class Job:
     def __init__(self, config, media_path):
         self.media_path = Path(media_path)
         self.job_id = self.generate_job_id()
         self.config = self.generate_isolated_config(config)
+        self.status = JobStatus.Queued
 
     def generate_job_id(self):
         hash_input = str(self.media_path).encode("utf-8")
