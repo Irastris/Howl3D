@@ -11,17 +11,17 @@ class JobStatus(Enum):
 class Job:
     def __init__(self, config, media_path):
         self.media_path = Path(media_path)
-        self.job_id = self.generate_job_id()
+        self.id = self.generate_id()
         self.config = self.generate_isolated_config(config)
         self.status = JobStatus.Queued
 
-    def generate_job_id(self):
+    def generate_id(self):
         hash_input = str(self.media_path).encode("utf-8")
         return hashlib.md5(hash_input).hexdigest()[:12]
 
     def generate_isolated_config(self, config):
         isolated_config = config.copy()
-        isolated_config["working_dir"] = str(Path(config["working_dir"]) / f"{self.job_id}")
+        isolated_config["working_dir"] = str(Path(config["working_dir"]) / f"{self.id}")
         return isolated_config
 
 class JobManager:
