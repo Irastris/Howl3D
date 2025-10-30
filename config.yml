@@ -7,10 +7,6 @@ stereo_processor: "StereoVision" # Which stereo processor to use in ["StereoVisi
 # Depth Anything V2 settings
 da2_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
 
-# Depth Pro settings
-dp_depth_min: 0.1 # Minimum depth for normalization of Depth Pro estimated depth maps, in meters
-dp_depth_max: 250 # Maximum depth for normalization of Depth Pro estimated depth maps, in meters
-
 # Distill Any Depth settings
 dad_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
 

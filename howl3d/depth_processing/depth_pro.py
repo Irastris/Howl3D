@@ -13,8 +13,8 @@ class DepthProProcessor(BaseDepthProcessor):
 
     def get_depth_normalization_params(self, depth):
         depth = 1 / depth # Invert the map
-        d_min = max(1 / self.config["dp_depth_max"], depth.min())
-        d_max = min(depth.max(), 1 / self.config["dp_depth_min"])
+        d_min = depth.min()
+        d_max = depth.max()
         depth_norm = ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
         return depth_norm
 
