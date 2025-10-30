@@ -1,5 +1,8 @@
 import shutil
 
+def copy_file(src, dst):
+    shutil.copyfile(src, dst)
+
 def ensure_directory(path):
     path.mkdir(parents=True, exist_ok=True)
 

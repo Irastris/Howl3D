@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 
 from howl3d.depth_processing.base import BaseDepthProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 from tqdm import tqdm
 
 class TemporalSmoothingProcessor(BaseDepthProcessor):

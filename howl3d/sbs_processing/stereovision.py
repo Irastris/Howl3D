@@ -6,7 +6,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from howl3d.sbs_processing.base import BaseStereoProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 
 # Adapted from ComfyUI-StereoVision -- https://github.com/DrMWeigand/ComfyUI-StereoVision
 class StereoVisionProcessor(BaseStereoProcessor):

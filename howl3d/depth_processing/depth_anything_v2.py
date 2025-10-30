@@ -4,7 +4,7 @@ import torch
 from tqdm import tqdm
 
 from howl3d.depth_processing.base import BaseDepthProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 from thirdparty.depth_anything_v2.dpt import DepthAnythingV2
 
 da2_model_configs = {

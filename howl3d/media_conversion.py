@@ -9,7 +9,7 @@ from howl3d.depth_processing.distill_any_depth import DistillAnyDepthProcessor
 from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
 from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import copy_file, ensure_directory
 
 class MediaInfo:
     def __init__(self, **kwargs):
@@ -77,11 +77,12 @@ class MediaConversion:
         capture.release()
 
     def process(self):
-        # Check if frames are already exported
-        if self.config["media_info"].type == "video" and self.should_export_frames():
-            # Ensure frame output directory exists
-            ensure_directory(self.config["frames_output_path"])
+        # Ensure frame output directory exists
+        ensure_directory(self.config["frames_output_path"])
 
+        if self.config["media_info"].type == "image": # Copy single image to frames directory # TODO: Lazy solution to avoid deeper refactoring, will need to address eventually
+            copy_file(self.config["media_path"], self.config["frames_output_path"] / "frame_000000.png")
+        elif self.config["media_info"].type == "video" and self.should_export_frames(): # Check if frames are already exported
             # Export frames
             # print(f"Exporting {self.config['media_info'].frames} frames from video")
             self.export_frames()

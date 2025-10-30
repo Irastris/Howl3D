@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 
 from howl3d.depth_processing.base import BaseDepthProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 from thirdparty.depth_pro import create_model_and_transforms, load_rgb
 
 # Adapted from DepthPro's run.py -- https://github.com/apple/ml-depth-pro/blob/main/src/depth_pro/cli/run.py

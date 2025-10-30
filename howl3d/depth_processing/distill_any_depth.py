@@ -6,7 +6,7 @@ from torchvision.transforms import Compose
 from tqdm import tqdm
 
 from howl3d.depth_processing.base import BaseDepthProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 from thirdparty.distillanydepth.depth_anything_v2.dpt import DepthAnythingV2
 from thirdparty.distillanydepth.midas.transforms import Resize, NormalizeImage, PrepareForNet
 from thirdparty.distillanydepth.modeling.archs.dam.dam import DepthAnything

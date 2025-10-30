@@ -6,7 +6,7 @@ import torch
 import yaml
 
 from howl3d.depth_processing.base import BaseDepthProcessor
-from howl3d.utils.directories import ensure_directory
+from howl3d.utils import ensure_directory
 from thirdparty.video_depth_anything.video_depth import VideoDepthAnything
 
 vda_model_configs = {
@@ -79,6 +79,10 @@ class VideoDepthAnythingProcessor(BaseDepthProcessor):
         self.depth_stats["max"] = depths_yaml["depth_max"]
 
     def process(self):
+        # Raise exception if attempting to use this processor on single images
+        if self.media_info.type == "image":
+            raise TypeError("VideoDepthAnythingProcessor only supports videos")
+
         # Check if depths are already exported
         if self.should_process("vda_depth_dir", self.check_yaml_exists):
             # Load VideoDepthAnything model
