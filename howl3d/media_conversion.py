@@ -22,7 +22,7 @@ class MediaConversion:
         self.config["media_path"] = Path(media_path)
         self.config["media_info"] = self.get_media_info()
         self.config["working_path"] = Path(self.config["working_dir"])
-        self.config["frames_output_path"] = Path(self.config["working_dir"]) / self.config["frames_dir"]
+        self.config["frames_output_path"] = self.config["working_path"] / self.config["frames_dir"]
 
     def get_media_info(self):
         if self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
