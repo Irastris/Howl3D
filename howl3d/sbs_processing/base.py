@@ -2,6 +2,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import cv2
 import numpy as np
 
 class BaseStereoProcessor(ABC):
@@ -67,6 +68,13 @@ class BaseStereoProcessor(ABC):
             padded[top_pad:top_pad + height, :, :] = image
 
         return padded
+
+    def save(self, output_path):
+        if self.media_info.type == "image":
+            sbs_image = cv2.imread(str(self.config["sbs_output_path"] / "sbs_000000.png"))
+            cv2.imwrite(str(output_path), sbs_image)
+        else:
+            self.encode_video(output_path)
 
     def encode_video(self, output_path):
         # Remove file at output path if it exists

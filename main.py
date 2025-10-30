@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import torch
 import yaml
 
-from howl3d.video_conversion import MediaConversion
+from howl3d.media_conversion import MediaConversion
 from howl3d.utils.directories import cleanup_directory
 
 if __name__ == "__main__":

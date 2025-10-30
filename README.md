@@ -1,9 +1,9 @@
 # Howl3D
-A free and open-source program for converting 2D videos to 3D.
+A free and open-source program for converting 2D images & videos to 3D.
 
 ⚠️ **Extremely WIP** ⚠️
 
-While Howl3D can currently produce 3D output from videos successfully, it has not nearly reached a state where I would recommend its usage. I've created this repository for backup purposes and left it public for anyone interested to observe its development progress. The only hardware I possess for development and testing are VITURE AR glasses and an NVIDIA PC, and as such I will be targeting CUDA acceleration and Full Side-By-Side (FSBS) conversion exclusively, at least for now.
+While Howl3D can currently produce outputs successfully, it has not nearly reached a state where I would recommend its usage. I've created this repository for backup purposes and left it public for anyone interested to observe its development progress. The only hardware I possess for development and testing are VITURE AR glasses and an NVIDIA PC, and as such I will be targeting CUDA acceleration and Full Side-By-Side (FSBS) conversion exclusively, at least for now.
 
 ---
 

@@ -2,6 +2,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import cv2
 import numpy as np
 
 class BaseDepthProcessor(ABC):
@@ -19,6 +20,16 @@ class BaseDepthProcessor(ABC):
 
     def get_depth_normalization_params(self, depth):
         raise NotImplementedError("Subclasses must implement depth normalization")
+
+    def save(self, output_path):
+        depths_path = self.config["depths_ts_output_path"] if self.media_info == "video" and self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
+
+        if self.media_info.type == "image":
+            depth = np.load(str(depths_path / "depth_000000.npy"))
+            depth_norm = self.get_depth_normalization_params(depth)
+            cv2.imwrite(str(output_path), depth_norm)
+        else:
+            self.encode_video(output_path)
 
     def encode_video(self, output_path):
         # Remove file at output path if it exists
