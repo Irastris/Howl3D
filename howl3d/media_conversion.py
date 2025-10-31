@@ -74,7 +74,7 @@ class MediaConversion:
             _, frame = capture.read()
             frame_filename = self.config["frames_output_path"] / f"frame_{i:06d}.png"
             cv2.imwrite(str(frame_filename), frame)
-            self.heartbeat.send(msg=f"Exported frame {i}/{self.config['media_info'].frames}")
+            self.heartbeat.send(task="frame_extraction", msg=f"Exported frame {i}/{self.config['media_info'].frames}")
         capture.release()
 
     def process(self):
@@ -84,12 +84,12 @@ class MediaConversion:
         if self.config["media_info"].type == "image": # Copy single image to frames directory # TODO: Lazy solution to avoid deeper refactoring, will need to address eventually
             copy_file(self.config["media_path"], self.config["frames_output_path"] / "frame_000000.png")
         elif self.config["media_info"].type == "video" and self.should_export_frames(): # Check if frames are already exported
-            self.heartbeat.send(msg=f"Exporting {self.config['media_info'].frames} frames from video")
+            self.heartbeat.send(task="media_conversion", msg=f"Exporting {self.config['media_info'].frames} frames from video")
             self.export_frames()
-            self.heartbeat.send(msg="Finished exporting frames from video")
+            self.heartbeat.send(task="media_conversion", msg="Finished exporting frames from video")
 
         # Generate depth maps
-        self.heartbeat.send(msg="Running depth processor")
+        self.heartbeat.send(task="media_conversion", msg="Running depth processor")
         if self.config["depth_processor"] == "DepthAnythingV2":
             depth_processor = DepthAnythingV2Processor(self.config, self.job.id)
         elif self.config["depth_processor"] == "DepthPro":
@@ -97,25 +97,25 @@ class MediaConversion:
         elif self.config["depth_processor"] == "DistillAnyDepth":
             depth_processor = DistillAnyDepthProcessor(self.config, self.job.id)
         depth_processor.process()
-        self.heartbeat.send(msg="Finished processing depth")
+        self.heartbeat.send(task="media_conversion", msg="Finished processing depth")
 
         # TODO: Implement some form of temporal smoothing, with some kind of masking so that they aren't blurred overall
 
         # Generate sterescopic images using StereoVision with multithreading
-        self.heartbeat.send(msg="Running stereoscopic processor")
+        self.heartbeat.send(task="media_conversion", msg="Running stereoscopic processor")
         if self.config["stereo_processor"] == "StereoVision":
             stereo_processor = StereoVisionProcessor(self.config, self.job.id)
         stereo_processor.process()
-        self.heartbeat.send(msg="Finished stereoscopic processing")
+        self.heartbeat.send(task="media_conversion", msg="Finished stereoscopic processing")
 
         # Save depth
-        self.heartbeat.send(msg="Saving depth")
+        self.heartbeat.send(task="media_conversion", msg="Saving depth")
         output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths.mp4")
         depth_processor.save(output_depth)
-        self.heartbeat.send(msg="Depth saved")
+        self.heartbeat.send(task="media_conversion", msg="Depth saved")
 
         # Save SBS
-        self.heartbeat.send(msg="Saving SBS")
+        self.heartbeat.send(task="media_conversion", msg="Saving SBS")
         output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs.mp4")
         stereo_processor.save(output_sbs)
-        self.heartbeat.send(msg="SBS saved")
+        self.heartbeat.send(task="media_conversion", msg="SBS saved")

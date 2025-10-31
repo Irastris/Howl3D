@@ -57,7 +57,7 @@ class StereoVisionProcessor(BaseStereoProcessor):
     def process(self):
         # Check if frames are already exported
         if self.should_process():
-            self.heartbeat.send(msg=f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
+            self.heartbeat.send(task="sbs_processor", msg=f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"])
@@ -67,6 +67,6 @@ class StereoVisionProcessor(BaseStereoProcessor):
 
             # Track completed futures
             for i, _ in enumerate(concurrent.futures.as_completed(futures)):
-                self.heartbeat.send(msg=f"Processed SBS frame {i+1}/{self.media_info.frames}")
+                self.heartbeat.send(task="sbs_processor", msg=f"Processed SBS frame {i+1}/{self.media_info.frames}")
         else:
-            self.heartbeat.send(msg="SBS frames already exported, skipping SBS computation")
+            self.heartbeat.send(task="sbs_processor", msg="SBS frames already exported, skipping SBS computation")
