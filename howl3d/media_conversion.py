@@ -17,9 +17,9 @@ class MediaInfo:
             setattr(self, key, value)
 
 class MediaConversion:
-    def __init__(self, config, media_path):
-        self.config = config
-        self.config["media_path"] = Path(media_path)
+    def __init__(self, job):
+        self.config = job.config
+        self.config["media_path"] = Path(job.media_path)
         self.config["media_info"] = self.get_media_info()
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = self.config["working_path"] / self.config["frames_dir"]

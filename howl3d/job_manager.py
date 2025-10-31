@@ -63,7 +63,7 @@ class JobManager:
                         heartbeat.send(msg=f"Starting job {job.id} for {job.media_path.name}")
 
                         try:
-                            media_conversion = MediaConversion(job.config, job.media_path)
+                            media_conversion = MediaConversion(job)
                             media_conversion.process()
                             job.status = JobStatus.Completed
                             heartbeat.send(msg=f"Job {job.id} completed!")
