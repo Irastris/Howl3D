@@ -24,6 +24,7 @@ class MediaConversion:
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = self.config["working_path"] / self.config["frames_dir"]
         self.heartbeat = Heartbeat(job.id)
+        self.job = job
 
     def get_media_info(self):
         if self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
@@ -113,7 +114,7 @@ class MediaConversion:
         # Generate sterescopic images using StereoVision with multithreading
         self.heartbeat.send(msg="Running stereoscopic processor")
         if self.config["stereo_processor"] == "StereoVision":
-            stereo_processor = StereoVisionProcessor(self.config)
+            stereo_processor = StereoVisionProcessor(self.config, self.job.id)
         stereo_processor.process()
         self.heartbeat.send(msg="Finished stereoscopic processing")
 

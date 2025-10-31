@@ -5,10 +5,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from howl3d.heartbeat import Heartbeat
+
 class BaseStereoProcessor(ABC):
-    def __init__(self, config, sbs_dir_key):
+    def __init__(self, config, job_id, sbs_dir_key):
         self.config = config
         self.config["sbs_output_path"] = Path(self.config["working_dir"]) / self.config[sbs_dir_key]
+        self.heartbeat = Heartbeat(job_id)
         # Shortcuts
         self.media_info = self.config["media_info"]
 

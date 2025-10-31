@@ -3,15 +3,15 @@ import concurrent.futures
 import cv2
 import numpy as np
 from PIL import Image
-from tqdm import tqdm
 
+from howl3d.heartbeat import Heartbeat
 from howl3d.sbs_processing.base import BaseStereoProcessor
 from howl3d.utils import ensure_directory
 
 # Adapted from ComfyUI-StereoVision -- https://github.com/DrMWeigand/ComfyUI-StereoVision
 class StereoVisionProcessor(BaseStereoProcessor):
-    def __init__(self, config):
-        super().__init__(config, "sv_sbs_dir")
+    def __init__(self, config, job_id):
+        super().__init__(config, job_id, "sv_sbs_dir")
 
     def compute_sbs(self, frame_idx):
         # Load base frame and get its dimensions
@@ -58,21 +58,16 @@ class StereoVisionProcessor(BaseStereoProcessor):
     def process(self):
         # Check if frames are already exported
         if self.should_process():
-            # print(f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
+            self.heartbeat.send(msg=f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
 
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"])
 
-            # Construct a manually updated progress bar
-            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
-
             # Submit futures to thread pool
             futures = [self.config["thread_pool"].submit(self.compute_sbs, i) for i in range(self.media_info.frames)]
-            for _ in concurrent.futures.as_completed(futures):
-                if self.media_info.type == "video":
-                    # Update the progress bar each time a future completes
-                    pass
-                    # pbar.update(1)
-                    # pbar.refresh()
+
+            # Track completed futures
+            for i, _ in enumerate(concurrent.futures.as_completed(futures)):
+                self.heartbeat.send(msg=f"Processed SBS frame {i+1}/{self.media_info.frames}")
         else:
-            pass # print("SBS frames already exported, skipping SBS computation")
+            self.heartbeat.send(msg="SBS frames already exported, skipping SBS computation")
