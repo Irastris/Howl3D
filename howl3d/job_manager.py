@@ -6,6 +6,7 @@ import traceback
 from enum import Enum
 from pathlib import Path
 
+from howl3d.heartbeat import Heartbeat
 from howl3d.media_conversion import MediaConversion
 
 class JobStatus(Enum):
@@ -43,7 +44,6 @@ class JobManager:
         with self.worker_thread_lock:
             self.job_queue.put(job)
             self.active_jobs[job.id] = job
-        print(f"Job submitted for {job.media_path} with a working directory of {job.config['working_dir']}")
 
     @staticmethod
     def return_exc(job, e):
@@ -57,14 +57,19 @@ class JobManager:
                     try:
                         job = self.job_queue.get(timeout=1)
                         job.status = JobStatus.Processing
+
+                        # Construct heartbeat
+                        heartbeat = Heartbeat(job.id)
+                        heartbeat.send(msg=f"Starting job {job.id} for {job.media_path.name}")
+
                         try:
                             media_conversion = MediaConversion(job.config, job.media_path)
                             media_conversion.process()
                             job.status = JobStatus.Completed
-                            print(f"Job {job.id} completed!")
+                            heartbeat.send(msg=f"Job {job.id} completed!")
                         except Exception as e:
                             job.status = JobStatus.Failed
-                            print(f"Job {job.id} failed: {self.return_exc(job, e)}")
+                            heartbeat.send(msg=f"Job {job.id} failed: {self.return_exc(job, e)}")
                         finally:
                             if job in self.job_queue.queue:
                                 self.job_queue.task_done()
