@@ -6,7 +6,6 @@ from howl3d.heartbeat import Heartbeat
 from howl3d.depth_processing.depth_anything_v2 import DepthAnythingV2Processor
 from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.distill_any_depth import DistillAnyDepthProcessor
-from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils import copy_file, ensure_directory
 
@@ -100,13 +99,7 @@ class MediaConversion:
         depth_processor.process()
         self.heartbeat.send(msg="Finished processing depth")
 
-        # Temporally smooth depth maps
-        # TODO: Implement some form of edge masking so that this doesn't result in an overall blurring of the depths, especially at higher window sizes
-        if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"]:
-            self.heartbeat.send(msg="Running temporal smoothing processor")
-            ts_processor = TemporalSmoothingProcessor(self.config)
-            ts_processor.process()
-            self.heartbeat.send(msg="Finished temporal smoothing")
+        # TODO: Implement some form of temporal smoothing, with some kind of masking so that they aren't blurred overall
 
         # Generate sterescopic images using StereoVision with multithreading
         self.heartbeat.send(msg="Running stereoscopic processor")
@@ -117,12 +110,12 @@ class MediaConversion:
 
         # Save depth
         self.heartbeat.send(msg="Saving depth")
-        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"] else "") + ".mp4")
+        output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths.mp4")
         depth_processor.save(output_depth)
         self.heartbeat.send(msg="Depth saved")
 
         # Save SBS
         self.heartbeat.send(msg="Saving SBS")
-        output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + ".mp4")
+        output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs.mp4")
         stereo_processor.save(output_sbs)
         self.heartbeat.send(msg="SBS saved")

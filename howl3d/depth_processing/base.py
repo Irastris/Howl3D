@@ -25,10 +25,8 @@ class BaseDepthProcessor(ABC):
         raise NotImplementedError("Subclasses must implement depth normalization")
 
     def save(self, output_path):
-        depths_path = self.config["depths_ts_output_path"] if self.media_info == "video" and self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
-
         if self.media_info.type == "image":
-            depth = np.load(str(depths_path / "depth_000000.npy"))
+            depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
             depth_norm = self.get_depth_normalization_params(depth)
             cv2.imwrite(str(output_path), depth_norm)
         else:
@@ -39,8 +37,7 @@ class BaseDepthProcessor(ABC):
         output_path.unlink(missing_ok=True)
 
         # Get dimensions from first depth frame, necessary to provide to ffmpeg for stdin input.
-        depths_path = self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"]
-        first_depth = np.load(str(depths_path / "depth_000000.npy"))
+        first_depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
         height, width = first_depth.shape
 
         # Build ffmpeg command
@@ -69,7 +66,7 @@ class BaseDepthProcessor(ABC):
 
         # Normalize and write each depth map
         for i in range(self.media_info.frames):
-            depth = np.load(str(depths_path / f"depth_{i:06d}.npy"))
+            depth = np.load(str(self.config["depths_output_path"] / f"depth_{i:06d}.npy"))
             depth_norm = self.get_depth_normalization_params(depth)
             process.stdin.write(depth_norm.tobytes())
 

@@ -12,11 +12,6 @@ da2_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
 # Distill Any Depth settings
 dad_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
 
-# Temporal Smoothing Settings
-enable_temporal_smoothing: False # Temporally smooth the estimated depths for improved consistency frame-to-frame, recommended if your chosen depth processor produces a lot of flicker
-ts_mode: "bidirectional" # Which smoothing mode to use in ["backward", "forward", "bidirectional"]
-ts_window_size: 3 # How many frames to sample for smoothing the current frame. Higher values further reduce flicker at the cost of increased blur.
-
 # StereoVision settings
 sv_depth_scale: 200 # Intensity of the depth effect. The original ComfyUI node defaults to 80, but I found that to be really weak.
 

@@ -108,8 +108,7 @@ class BaseStereoProcessor(ABC):
             raise RuntimeError(f"ffmpeg encoding failed: {process.stderr}")
 
     def get_depth_normalization_params(self, frame_idx):
-        depths_path = (self.config["depths_ts_output_path"] if self.config["enable_temporal_smoothing"] else self.config["depths_output_path"])
-        depth = np.load(str(depths_path / f"depth_{frame_idx:06d}.npy"))
+        depth = np.load(str(self.config["depths_output_path"] / f"depth_{frame_idx:06d}.npy"))
 
         if self.config["depth_processor"] in ["DepthAnythingV2", "DistillAnyDepth"]:
             d_min = depth.min()
