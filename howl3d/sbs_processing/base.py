@@ -118,9 +118,6 @@ class BaseStereoProcessor(ABC):
             depth = 1 / depth # Invert the map
             d_min = depth.min()
             d_max = depth.max()
-        elif self.config["depth_processor"] == "VideoDepthAnything":
-            d_min = self.config["depth_stats"]["min"]
-            d_max = self.config["depth_stats"]["max"]
 
         return ((depth - d_min) / (d_max - d_min) * 255).astype(np.uint8)
 

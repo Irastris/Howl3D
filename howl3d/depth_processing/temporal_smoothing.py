@@ -15,7 +15,6 @@ class TemporalSmoothingProcessor(BaseDepthProcessor):
         if depth_processor == "DepthAnythingV2": return "da2_depth_dir"
         elif depth_processor == "DepthPro": return "dp_depth_dir"
         elif depth_processor == "DistillAnyDepth": return "dad_depth_dir"
-        elif depth_processor == "VideoDepthAnything": return "vda_depth_dir"
 
     def should_process(self):
         if not self.config["depths_ts_output_path"].exists(): return True

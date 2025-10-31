@@ -1,9 +1,9 @@
 # Global settings
 concurrent_jobs: 1 # Maximum number of jobs to process concurrently. I'm not sure if the average PC would ever be able to handle more than 1.
 threads: 8 # Number of threads to use for multithreaded operations
-enable_detailed_exceptions: False # Whether to include full tracebacks when the job manager raises exceptions
+enable_detailed_exceptions: True # Whether to include full tracebacks when the job manager raises exceptions
 cleanup: False # Whether to cleanup working directories after processing or retain intermediate data for reruns
-depth_processor: "DepthPro" # Which depth processor to use in ["DepthAnythingV2", "DepthPro", "DistillAnyDepth", "VideoDepthAnything"]
+depth_processor: "DepthPro" # Which depth processor to use in ["DepthAnythingV2", "DepthPro", "DistillAnyDepth"]
 stereo_processor: "StereoVision" # Which stereo processor to use in ["StereoVision"]
 
 # Depth Anything V2 settings
@@ -11,10 +11,6 @@ da2_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
 
 # Distill Any Depth settings
 dad_model: "vitb" # Which model to use in ['vits', 'vitb', 'vitl']
-
-# Video Depth Anything settings
-vda_model: "vitb" # Which model to use in ["vits", "vitb", "vitl"]
-vda_batch_size: 150 # Batch size to avoid flooding memory on longer videos
 
 # Temporal Smoothing Settings
 enable_temporal_smoothing: False # Temporally smooth the estimated depths for improved consistency frame-to-frame, recommended if your chosen depth processor produces a lot of flicker
@@ -30,5 +26,4 @@ frames_dir: "frames"
 da2_depth_dir: "depths_da2"
 dp_depth_dir: "depths_dp"
 dad_depth_dir: "depths_dad"
-vda_depth_dir: "depths_vda"
 sv_sbs_dir: "frames_sbs_sv"

@@ -7,7 +7,6 @@ from howl3d.depth_processing.depth_anything_v2 import DepthAnythingV2Processor
 from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.distill_any_depth import DistillAnyDepthProcessor
 from howl3d.depth_processing.temporal_smoothing import TemporalSmoothingProcessor
-from howl3d.depth_processing.video_depth_anything import VideoDepthAnythingProcessor
 from howl3d.sbs_processing.stereovision import StereoVisionProcessor
 from howl3d.utils import copy_file, ensure_directory
 
@@ -98,8 +97,6 @@ class MediaConversion:
             depth_processor = DepthProProcessor(self.config)
         elif self.config["depth_processor"] == "DistillAnyDepth":
             depth_processor = DistillAnyDepthProcessor(self.config)
-        elif self.config["depth_processor"] == "VideoDepthAnything":
-            depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process()
         self.heartbeat.send(msg="Finished processing depth")
 
