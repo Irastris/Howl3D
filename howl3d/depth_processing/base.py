@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from howl3d.heartbeat import Heartbeat
+from howl3d.heartbeat import Heartbeat, HeartbeatType
 
 class BaseDepthProcessor(ABC):
     def __init__(self, config, job_id, depth_dir_key):
@@ -25,12 +25,14 @@ class BaseDepthProcessor(ABC):
         raise NotImplementedError("Subclasses must implement depth normalization")
 
     def save(self, output_path):
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg="Saving depth")
         if self.media_info.type == "image":
             depth = np.load(str(self.config["depths_output_path"] / "depth_000000.npy"))
             depth_norm = self.get_depth_normalization_params(depth)
             cv2.imwrite(str(output_path), depth_norm)
         else:
             self.encode_video(output_path)
+        self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depth saved")
 
     def encode_video(self, output_path):
         # Remove file at output path if it exists

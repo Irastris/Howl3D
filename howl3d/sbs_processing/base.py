@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from howl3d.heartbeat import Heartbeat
+from howl3d.heartbeat import Heartbeat, HeartbeatType
 
 class BaseStereoProcessor(ABC):
     def __init__(self, config, job_id, sbs_dir_key):
@@ -73,11 +73,13 @@ class BaseStereoProcessor(ABC):
         return padded
 
     def save(self, output_path):
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="sbs_processor", msg="Saving SBS")
         if self.media_info.type == "image":
             sbs_image = cv2.imread(str(self.config["sbs_output_path"] / "sbs_000000.png"))
             cv2.imwrite(str(output_path), sbs_image)
         else:
             self.encode_video(output_path)
+        self.heartbeat.send(type=HeartbeatType.TaskComplete, task="sbs_processor", msg="SBS saved")
 
     def encode_video(self, output_path):
         # Remove file at output path if it exists

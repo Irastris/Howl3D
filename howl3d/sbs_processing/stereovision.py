@@ -56,10 +56,10 @@ class StereoVisionProcessor(BaseStereoProcessor):
         cv2.imwrite(str(sbs_frame_path), cv2.cvtColor(sbs_image, cv2.COLOR_RGB2BGR))
 
     def process(self):
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="sbs_processor", msg="Running SBS processor")
+
         # Check if frames are already exported
         if self.should_process():
-            self.heartbeat.send(type=HeartbeatType.TaskStart, task="sbs_processor", msg=f"Computing {self.media_info.frames} SBS frames on {self.config['threads']} threads")
-
             # Ensure SBS output directory exists
             ensure_directory(self.config["sbs_output_path"])
 
@@ -69,5 +69,7 @@ class StereoVisionProcessor(BaseStereoProcessor):
             # Track completed futures
             for i, _ in enumerate(concurrent.futures.as_completed(futures)):
                 self.heartbeat.send(type=HeartbeatType.TaskUpdate, task="sbs_processor", msg=f"Processed SBS frame {i+1}/{self.media_info.frames}")
+
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="sbs_processor", msg="Finished processing SBS")
         else:
-            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="sbs_processor", msg="SBS frames already exported, skipping SBS computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="sbs_processor", msg="SBS already processed, skipping")

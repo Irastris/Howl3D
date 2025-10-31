@@ -35,9 +35,9 @@ class DepthProProcessor(BaseDepthProcessor):
         np.save(str(depth_path), depth_map)
 
     def process(self):
-        if self.should_process("dp_depth_dir"):
-            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg="Running depth processor")
 
+        if self.should_process("dp_depth_dir"):
             # Load Depth Pro model
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
@@ -53,5 +53,7 @@ class DepthProProcessor(BaseDepthProcessor):
             # Cleanup model from GPU
             del depth_pro
             torch.cuda.empty_cache()
+
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Finished processing depth")
         else:
-            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping")

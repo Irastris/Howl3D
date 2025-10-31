@@ -51,9 +51,9 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
         np.save(str(depth_path), depth_map)
 
     def process(self):
-        if self.should_process("dad_depth_dir"):
-            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg="Running depth processor")
 
+        if self.should_process("dad_depth_dir"):
             # Load DistillAnyDepth model
             dad_model = self.config["dad_model"]
             distill_any_depth = DepthAnything(**dad_model_configs[dad_model]) if dad_model == "vitl" else DepthAnythingV2(**dad_model_configs[dad_model])
@@ -71,5 +71,7 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
             # Cleanup model from GPU
             del distill_any_depth
             torch.cuda.empty_cache()
+
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Finished processing depth")
         else:
             self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")

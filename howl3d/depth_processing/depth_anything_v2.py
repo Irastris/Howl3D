@@ -38,9 +38,9 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
         np.save(str(depth_path), depth)
 
     def process(self):
-        if self.should_process("da2_depth_dir"):
-            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+        self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg="Running depth processor")
 
+        if self.should_process("da2_depth_dir"):
             # Load DepthAnythingV2 model
             da2_model = self.config["da2_model"]
             depth_anything = DepthAnythingV2(**da2_model_configs[da2_model])
@@ -58,5 +58,7 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
             # Cleanup model from GPU
             del depth_anything
             torch.cuda.empty_cache()
+
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Finished processing depth")
         else:
-            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already processed, skipping")
