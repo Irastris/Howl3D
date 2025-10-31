@@ -3,6 +3,7 @@ import numpy as np
 import torch
 
 from howl3d.depth_processing.base import BaseDepthProcessor
+from howl3d.heartbeat import HeartbeatType
 from howl3d.utils import ensure_directory
 from thirdparty.depth_anything_v2.dpt import DepthAnythingV2
 
@@ -38,14 +39,13 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
 
     def process(self):
         if self.should_process("da2_depth_dir"):
+            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+
             # Load DepthAnythingV2 model
-            self.heartbeat.send(task="depth_processor", msg=f"Loading DepthAnythingV2 model, {self.config['da2_model']} variant")
             da2_model = self.config["da2_model"]
             depth_anything = DepthAnythingV2(**da2_model_configs[da2_model])
             depth_anything.load_state_dict(torch.load(f"models/depth_anything_v2/{da2_model}.pth", map_location="cpu"), strict=True)
             depth_anything = depth_anything.to("cuda").eval()
-
-            self.heartbeat.send(task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
@@ -53,10 +53,10 @@ class DepthAnythingV2Processor(BaseDepthProcessor):
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_anything)
-                self.heartbeat.send(task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
+                self.heartbeat.send(type=HeartbeatType.TaskUpdate, task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
 
             # Cleanup model from GPU
             del depth_anything
             torch.cuda.empty_cache()
         else:
-            self.heartbeat.send(task="depth_processor", msg="Depths already exported, skipping depth computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")

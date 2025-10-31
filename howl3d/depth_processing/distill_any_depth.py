@@ -5,6 +5,7 @@ from safetensors.torch import load_file
 from torchvision.transforms import Compose
 
 from howl3d.depth_processing.base import BaseDepthProcessor
+from howl3d.heartbeat import HeartbeatType
 from howl3d.utils import ensure_directory
 from thirdparty.distillanydepth.depth_anything_v2.dpt import DepthAnythingV2
 from thirdparty.distillanydepth.midas.transforms import Resize, NormalizeImage, PrepareForNet
@@ -51,14 +52,13 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
 
     def process(self):
         if self.should_process("dad_depth_dir"):
+            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+
             # Load DistillAnyDepth model
             dad_model = self.config["dad_model"]
-            self.heartbeat.send(task="depth_processor", msg=f"Loading DistillAnyDepth model, {dad_model} variant")
             distill_any_depth = DepthAnything(**dad_model_configs[dad_model]) if dad_model == "vitl" else DepthAnythingV2(**dad_model_configs[dad_model])
             distill_any_depth.load_state_dict(load_file(f"models/distill_any_depth/{dad_model}.safetensors"))
             distill_any_depth = distill_any_depth.to(self.config["device"]) # TODO: DepthAnythingV2 has an eval() here, is that really unnecessary?
-
-            self.heartbeat.send(task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
@@ -66,10 +66,10 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, distill_any_depth)
-                self.heartbeat.send(task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
+                self.heartbeat.send(type=HeartbeatType.TaskUpdate, task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
 
             # Cleanup model from GPU
             del distill_any_depth
             torch.cuda.empty_cache()
         else:
-            self.heartbeat.send(task="depth_processor", msg="Depths already exported, skipping depth computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")

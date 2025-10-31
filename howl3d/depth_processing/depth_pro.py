@@ -2,6 +2,7 @@ import numpy as np
 import torch
 
 from howl3d.depth_processing.base import BaseDepthProcessor
+from howl3d.heartbeat import HeartbeatType
 from howl3d.utils import ensure_directory
 from thirdparty.depth_pro import create_model_and_transforms, load_rgb
 
@@ -35,12 +36,11 @@ class DepthProProcessor(BaseDepthProcessor):
 
     def process(self):
         if self.should_process("dp_depth_dir"):
+            self.heartbeat.send(type=HeartbeatType.TaskStart, task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
+
             # Load Depth Pro model
-            self.heartbeat.send(task="depth_processor", msg="Loading DepthPro model")
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
-
-            self.heartbeat.send(task="depth_processor", msg=f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
@@ -48,10 +48,10 @@ class DepthProProcessor(BaseDepthProcessor):
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_pro, depth_pro_transform)
-                self.heartbeat.send(task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
+                self.heartbeat.send(type=HeartbeatType.TaskUpdate, task="depth_processor", msg=f"Processed frame {i+1}/{self.media_info.frames}")
 
             # Cleanup model from GPU
             del depth_pro
             torch.cuda.empty_cache()
         else:
-            self.heartbeat.send(task="depth_processor", msg="Depths already exported, skipping depth computation")
+            self.heartbeat.send(type=HeartbeatType.TaskComplete, task="depth_processor", msg="Depths already exported, skipping depth computation")
