@@ -92,11 +92,11 @@ class MediaConversion:
         # Generate depth maps
         self.heartbeat.send(msg="Running depth processor")
         if self.config["depth_processor"] == "DepthAnythingV2":
-            depth_processor = DepthAnythingV2Processor(self.config)
+            depth_processor = DepthAnythingV2Processor(self.config, self.job.id)
         elif self.config["depth_processor"] == "DepthPro":
-            depth_processor = DepthProProcessor(self.config)
+            depth_processor = DepthProProcessor(self.config, self.job.id)
         elif self.config["depth_processor"] == "DistillAnyDepth":
-            depth_processor = DistillAnyDepthProcessor(self.config)
+            depth_processor = DistillAnyDepthProcessor(self.config, self.job.id)
         depth_processor.process()
         self.heartbeat.send(msg="Finished processing depth")
 

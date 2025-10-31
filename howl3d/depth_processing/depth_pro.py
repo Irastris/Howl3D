@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from tqdm import tqdm
 
 from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils import ensure_directory
@@ -37,28 +36,22 @@ class DepthProProcessor(BaseDepthProcessor):
     def process(self):
         if self.should_process("dp_depth_dir"):
             # Load Depth Pro model
-            # print("Loading DepthPro model")
+            self.heartbeat.send(msg="Loading DepthPro model")
             depth_pro, depth_pro_transform = create_model_and_transforms(device=self.config["device"], precision=torch.half)
             depth_pro.eval()
 
-            # print(f"Computing depths for {self.media_info.frames} frames")
+            self.heartbeat.send(msg=f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
-            # Construct a manually updated progress bar
-            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
-
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, depth_pro, depth_pro_transform)
-                if self.media_info.type == "video":
-                    pass
-                    # pbar.update(1)
-                    # pbar.refresh()
+                self.heartbeat.send(msg=f"Processed frame {i+1}/{self.media_info.frames}")
 
             # Cleanup model from GPU
             del depth_pro
             torch.cuda.empty_cache()
         else:
-            pass # print("Depths already exported, skipping depth computation")
+            self.heartbeat.send(msg="Depths already exported, skipping depth computation")

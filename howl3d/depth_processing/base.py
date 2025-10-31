@@ -5,10 +5,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from howl3d.heartbeat import Heartbeat
+
 class BaseDepthProcessor(ABC):
-    def __init__(self, config, depth_dir_key):
+    def __init__(self, config, job_id, depth_dir_key):
         self.config = config
         self.config["depths_output_path"] = Path(self.config["working_dir"]) / self.config[depth_dir_key]
+        self.heartbeat = Heartbeat(job_id)
         # Shortcuts
         self.media_info = self.config["media_info"]
 

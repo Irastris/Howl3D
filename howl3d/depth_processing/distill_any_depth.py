@@ -3,7 +3,6 @@ import numpy as np
 import torch
 from safetensors.torch import load_file
 from torchvision.transforms import Compose
-from tqdm import tqdm
 
 from howl3d.depth_processing.base import BaseDepthProcessor
 from howl3d.utils import ensure_directory
@@ -54,29 +53,23 @@ class DistillAnyDepthProcessor(BaseDepthProcessor):
         if self.should_process("dad_depth_dir"):
             # Load DistillAnyDepth model
             dad_model = self.config["dad_model"]
-            # print(f"Loading DistillAnyDepth model, {dad_model} variant")
+            self.heartbeat.send(msg=f"Loading DistillAnyDepth model, {dad_model} variant")
             distill_any_depth = DepthAnything(**dad_model_configs[dad_model]) if dad_model == "vitl" else DepthAnythingV2(**dad_model_configs[dad_model])
             distill_any_depth.load_state_dict(load_file(f"models/distill_any_depth/{dad_model}.safetensors"))
             distill_any_depth = distill_any_depth.to(self.config["device"]) # TODO: DepthAnythingV2 has an eval() here, is that really unnecessary?
 
-            # print(f"Computing depths for {self.media_info.frames} frames")
+            self.heartbeat.send(msg=f"Computing depths for {self.media_info.frames} frames")
 
             # Ensure depth output directory exists, cleaning up existing contents if they exist
             ensure_directory(self.config["depths_output_path"])
 
-            # Construct a manually updated progress bar
-            if self.media_info.type == "video": pass # pbar = tqdm(range(self.media_info.frames))
-
             # Compute depth for each frame
             for i in range(self.media_info.frames):
                 self.compute_depths(i, distill_any_depth)
-                if self.media_info.type == "video":
-                    pass
-                    # pbar.update(1)
-                    # pbar.refresh()
+                self.heartbeat.send(msg=f"Processed frame {i+1}/{self.media_info.frames}")
 
             # Cleanup model from GPU
             del distill_any_depth
             torch.cuda.empty_cache()
         else:
-            pass # print("Depths already exported, skipping depth computation")
+            self.heartbeat.send(msg="Depths already exported, skipping depth computation")

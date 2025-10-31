@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from howl3d.heartbeat import Heartbeat
 from howl3d.sbs_processing.base import BaseStereoProcessor
 from howl3d.utils import ensure_directory
 
