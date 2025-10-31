@@ -14,8 +14,8 @@ da2_model_configs = {
 
 # Adapted from DepthAnythingV2's run.py -- https://github.com/DepthAnything/Depth-Anything-V2/blob/main/run.py
 class DepthAnythingV2Processor(BaseDepthProcessor):
-    def __init__(self, config):
-        super().__init__(config, "da2_depth_dir")
+    def __init__(self, config, job_id):
+        super().__init__(config, job_id, "da2_depth_dir")
 
     def get_depth_normalization_params(self, depth):
         d_min = depth.min()

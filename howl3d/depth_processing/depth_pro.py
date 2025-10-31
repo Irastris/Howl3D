@@ -7,8 +7,8 @@ from thirdparty.depth_pro import create_model_and_transforms, load_rgb
 
 # Adapted from DepthPro's run.py -- https://github.com/apple/ml-depth-pro/blob/main/src/depth_pro/cli/run.py
 class DepthProProcessor(BaseDepthProcessor):
-    def __init__(self, config):
-        super().__init__(config, "dp_depth_dir")
+    def __init__(self, config, job_id):
+        super().__init__(config, job_id, "dp_depth_dir")
 
     def get_depth_normalization_params(self, depth):
         depth = 1 / depth # Invert the map

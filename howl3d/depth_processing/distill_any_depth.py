@@ -18,8 +18,8 @@ dad_model_configs = {
 
 # Adapted from DistillAnyDepth's app.py -- https://github.com/Westlake-AGI-Lab/Distill-Any-Depth/blob/main/app.py
 class DistillAnyDepthProcessor(BaseDepthProcessor):
-    def __init__(self, config):
-        super().__init__(config, "dad_depth_dir")
+    def __init__(self, config, job_id):
+        super().__init__(config, job_id, "dad_depth_dir")
 
     def get_depth_normalization_params(self, depth):
         d_min = depth.min()
