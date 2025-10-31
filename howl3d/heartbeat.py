@@ -3,4 +3,4 @@ class Heartbeat:
         self.job_id = job_id
 
     def send(self, msg):
-        print(msg, flush=True)
+        print(f"Job {self.job_id} sent heartbeat: {msg}", flush=True)

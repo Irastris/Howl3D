@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import cv2
-from tqdm import tqdm
 
+from howl3d.heartbeat import Heartbeat
 from howl3d.depth_processing.depth_anything_v2 import DepthAnythingV2Processor
 from howl3d.depth_processing.depth_pro import DepthProProcessor
 from howl3d.depth_processing.distill_any_depth import DistillAnyDepthProcessor
@@ -23,6 +23,7 @@ class MediaConversion:
         self.config["media_info"] = self.get_media_info()
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = self.config["working_path"] / self.config["frames_dir"]
+        self.heartbeat = Heartbeat(job.id)
 
     def get_media_info(self):
         if self.config["media_path"].suffix.lower() in [".jpeg", ".jpg", ".png", ".webp"]:
@@ -70,10 +71,11 @@ class MediaConversion:
 
     def export_frames(self):
         capture = cv2.VideoCapture(str(self.config["media_path"]))
-        for i in range(self.config["media_info"].frames): # tqdm()
+        for i in range(self.config["media_info"].frames):
             _, frame = capture.read()
             frame_filename = self.config["frames_output_path"] / f"frame_{i:06d}.png"
             cv2.imwrite(str(frame_filename), frame)
+            self.heartbeat.send(msg=f"Exported frame {i}/{self.config['media_info'].frames}")
         capture.release()
 
     def process(self):
@@ -83,12 +85,12 @@ class MediaConversion:
         if self.config["media_info"].type == "image": # Copy single image to frames directory # TODO: Lazy solution to avoid deeper refactoring, will need to address eventually
             copy_file(self.config["media_path"], self.config["frames_output_path"] / "frame_000000.png")
         elif self.config["media_info"].type == "video" and self.should_export_frames(): # Check if frames are already exported
-            # Export frames
-            # print(f"Exporting {self.config['media_info'].frames} frames from video")
+            self.heartbeat.send(msg=f"Exporting {self.config['media_info'].frames} frames from video")
             self.export_frames()
+            self.heartbeat.send(msg="Finished exporting frames from video")
 
         # Generate depth maps
-        # print("Running depth processor")
+        self.heartbeat.send(msg="Running depth processor")
         if self.config["depth_processor"] == "DepthAnythingV2":
             depth_processor = DepthAnythingV2Processor(self.config)
         elif self.config["depth_processor"] == "DepthPro":
@@ -98,26 +100,31 @@ class MediaConversion:
         elif self.config["depth_processor"] == "VideoDepthAnything":
             depth_processor = VideoDepthAnythingProcessor(self.config)
         depth_processor.process()
+        self.heartbeat.send(msg="Finished processing depth")
 
         # Temporally smooth depth maps
         # TODO: Implement some form of edge masking so that this doesn't result in an overall blurring of the depths, especially at higher window sizes
         if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"]:
-            # print("Running temporal smoothing processor")
+            self.heartbeat.send(msg="Running temporal smoothing processor")
             ts_processor = TemporalSmoothingProcessor(self.config)
             ts_processor.process()
+            self.heartbeat.send(msg="Finished temporal smoothing")
 
         # Generate sterescopic images using StereoVision with multithreading
-        # print("Running stereoscopy processor")
+        self.heartbeat.send(msg="Running stereoscopic processor")
         if self.config["stereo_processor"] == "StereoVision":
             stereo_processor = StereoVisionProcessor(self.config)
         stereo_processor.process()
+        self.heartbeat.send(msg="Finished stereoscopic processing")
 
         # Save depth
+        self.heartbeat.send(msg="Saving depth")
         output_depth = self.config["media_path"].parent / (self.config["media_path"].stem + "_depths" + ("_ts" if self.config["media_info"].type == "video" and self.config["enable_temporal_smoothing"] else "") + ".mp4")
-        # print(f"Saving depth to {output_depth}")
         depth_processor.save(output_depth)
+        self.heartbeat.send(msg="Depth saved")
 
         # Save SBS
+        self.heartbeat.send(msg="Saving SBS")
         output_sbs = self.config["media_path"].parent / (self.config["media_path"].stem + "_sbs" + ".mp4")
-        # print(f"Saving SBS to {output_sbs}")
         stereo_processor.save(output_sbs)
+        self.heartbeat.send(msg="SBS saved")
