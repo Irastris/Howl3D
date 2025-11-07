@@ -31,10 +31,10 @@ class Job:
         return isolated_config
 
 class JobManager:
-    def __init__(self, concurrent_jobs=1):
-        self.concurrent_jobs = concurrent_jobs
+    def __init__(self, pipe_communicator):
         self.job_queue = queue.Queue()
         self.active_jobs = {}
+        self.pipe_communicator = pipe_communicator
         self.worker_thread = threading.Thread(target=self.process_jobs, daemon=True).start()
         self.worker_thread_lock = threading.Lock()
 
@@ -52,7 +52,7 @@ class JobManager:
         while True:
             try:
                 active_count = sum(1 for job in self.active_jobs.values() if job.status == JobStatus.Processing)
-                if active_count < self.concurrent_jobs:
+                if active_count < 1: # Number active_count is less than is the number of concurrently allowed jobs
                     try:
                         job = self.job_queue.get(timeout=1)
                         job.status = JobStatus.Processing
@@ -60,7 +60,7 @@ class JobManager:
                         print(f"Starting job {job.id} for {job.media_path.name}", flush=True)
 
                         try:
-                            media_conversion = MediaConversion(job)
+                            media_conversion = MediaConversion(job, self.pipe_communicator)
                             media_conversion.process()
                             job.status = JobStatus.Completed
                             print(f"Job {job.id} completed!", flush=True)

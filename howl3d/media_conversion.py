@@ -15,13 +15,14 @@ class MediaInfo:
             setattr(self, key, value)
 
 class MediaConversion:
-    def __init__(self, job):
+    def __init__(self, job, pipe_communicator=None):
         self.config = job.config
         self.config["media_path"] = Path(job.media_path)
         self.config["media_info"] = self.get_media_info()
         self.config["working_path"] = Path(self.config["working_dir"])
         self.config["frames_output_path"] = self.config["working_path"] / self.config["frames_dir"]
-        self.heartbeat = Heartbeat(job.id)
+        self.pipe_communicator = pipe_communicator
+        self.heartbeat = Heartbeat(job.id, pipe_communicator)
         self.job = job
 
     def get_media_info(self):
